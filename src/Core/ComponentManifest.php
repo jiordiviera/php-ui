@@ -31,10 +31,7 @@ class ComponentManifest
                     'composer' => ['mallardduck/blade-lucide-icons'],
                     'npm' => [],
                 ],
-                'css_vars' => [
-                    '--ui-primary' => '#0f172a',
-                    '--ui-primary-foreground' => '#ffffff',
-                ],
+                'css_vars' => [],
                 'js_stubs' => [],
             ],
             'input' => [
