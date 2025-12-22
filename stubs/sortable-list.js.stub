@@ -1,0 +1,40 @@
+export default (options = {}) => ({
+    items: options.items || [],
+    itemKey: options.itemKey || 'id',
+    sortable: null,
+    onUpdate: options.onUpdate || null,
+
+    init() {
+        this.$nextTick(() => {
+            const list = this.$refs.sortableList;
+            if (!list || !window.Sortable) return;
+
+            this.sortable = new window.Sortable(list, {
+                animation: options.animation || 150,
+                ghostClass: options.ghostClass || 'opacity-50',
+                dragClass: options.dragClass || 'shadow-lg',
+                handle: options.handle ? '.sortable-handle' : null,
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
+                onEnd: (evt) => {
+                    const items = list.querySelectorAll('[data-id]');
+                    const orderedIds = Array.from(items).map(item => item.dataset.id);
+                    
+                    if (options.wireModel && this.$wire) {
+                        this.$wire.set(options.wireModel, orderedIds);
+                    }
+
+                    if (this.onUpdate && typeof this.onUpdate === 'function') {
+                        this.onUpdate(orderedIds);
+                    }
+                }
+            });
+        });
+    },
+
+    destroy() {
+        if (this.sortable) {
+            this.sortable.destroy();
+        }
+    }
+})
