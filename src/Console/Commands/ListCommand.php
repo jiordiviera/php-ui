@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\Table;
 use Jiordiviera\PhpUi\Core\ComponentManifest;
+use function Laravel\Prompts\intro;
 
 class ListCommand extends Command
 {
@@ -22,6 +23,8 @@ class ListCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        intro('📦 Available UI Components');
+
         $components = ComponentManifest::all();
         $rows = [];
 
