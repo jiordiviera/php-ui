@@ -12,8 +12,6 @@ You can install the package via composer globally to use it in any project:
 composer global require jiordiviera/php-ui
 ```
 
-Make sure your global composer bin directory is in your system's PATH.
-
 Alternatively, you can install it as a dev dependency in a specific project:
 
 ```bash
@@ -24,32 +22,75 @@ composer require --dev jiordiviera/php-ui
 
 ### 1. Initialize
 
-Run the init command to set up the configuration for your project. This will detect your project structure and Tailwind version.
+Run the init command to set up the configuration for your project.
 
 ```bash
 php-ui init
 ```
 
-This creates a `php-ui.json` file in your project root.
+### 2. List Available Components
 
-### 2. Add Components
+See all components you can add to your project.
+
+```bash
+php-ui list
+```
+
+### 3. Add Components
 
 Use the `add` command to scaffold a new component.
 
 ```bash
-php-ui add button
+php-ui add <component-name>
 ```
 
-This will:
-1.  Check and install necessary dependencies (e.g., icons, libraries).
-2.  Generate the PHP Class (e.g., `app/Livewire/UI/Button.php`).
-3.  Generate the Blade View (e.g., `resources/views/livewire/ui/button.blade.php`).
-4.  Inject necessary CSS variables into your `app.css`.
+**Options:**
 
-## Supported Components
+- `--force` or `-f`: Overwrite existing files without asking.
 
-*   Button
-*   *(More coming soon...)*
+## Available Components (25+)
+
+### Base & Form
+
+- `button`: Versatile button with variants and sizes.
+- `input`: Form field with label, icons, and error handling.
+- `toggle`: Accessible switch for boolean values.
+- `range-slider`: Single or double handle numeric slider.
+- `file-upload`: Zone with drag-and-drop and progress bar.
+
+### Navigation & Layout
+
+- `breadcrumbs`: Navigation trail for nested pages.
+- `tabs`: Tabbed interface for content switching.
+- `modal`: Accessible dialog with transitions.
+- `drawer`: Side panel sliding from edges.
+- `accordion`: Expandable content panels.
+
+### Feedback & Status
+
+- `alert`: Contextual messages for user actions.
+- `badge`: Small status indicators.
+- `toast`: Global notification system.
+- `tooltip`: Hover information popups.
+- `progress-bar`: Visual progress indicator.
+- `progress-steps`: Horizontal process tracker.
+- `skeleton`: Loading state placeholders.
+
+### Data & Visualization
+
+- `data-table`: Advanced table with search, sort, and pagination.
+- `stat-card`: Metrics display with trends and icons.
+- `timeline`: Chronological event display.
+- `rating`: Star rating with half-star support.
+
+### Utilities
+
+- `avatar`: Profile image with fallback initials and status.
+- `avatar-group`: Stacked user avatars.
+- `command-palette`: Global Spotlight-style search interface.
+- `kbd`: Keyboard key indicators.
+- `code-snippet`: Code display with copy functionality.
+- `empty-state`: Placeholder for empty collections.
 
 ## Contributing
 
