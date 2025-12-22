@@ -22,8 +22,8 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\search;
+use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class AddCommand extends Command
@@ -52,6 +52,7 @@ class AddCommand extends Command
 
             if (! $name) {
                 error('No component selected.');
+
                 return Command::FAILURE;
             }
         } else {
