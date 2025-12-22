@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jiordiviera\PhpUi\Console\Commands;
 
 use Jiordiviera\PhpUi\Console\Logo;
+use Jiordiviera\PhpUi\Core\Transformer\CssInjector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,11 +28,12 @@ class InitCommand extends Command
         // 1. Analyse avec Loader
         $analysis = spin(
             function () use ($detector) {
-                sleep(1); // Fake delay for UX (user feels "work" is being done)
+                sleep(1); // Fake delay for UX
 
                 return [
                     'version' => $detector->detectTailwindVersion(),
                     'namespace' => $detector->getRootNamespace(),
+                    'root' => $detector->getProjectRoot(),
                 ];
             },
             'Analyzing project structure...'
@@ -39,20 +41,48 @@ class InitCommand extends Command
 
         $detectedVersion = $analysis['version'];
         $detectedNamespace = $analysis['namespace'];
+        $projectPath = $analysis['root'];
 
         note("Detected: Tailwind {$detectedVersion}, Namespace: {$detectedNamespace}");
 
-        // 2. Configuration (Smart Defaults)
-        // If detected is v4, we assume it's correct but let user override if they want
-        // Actually, let's keep the select for control but use detection as default
+        // 2. Configuration
         $version = select(
             label: 'Which version of Tailwind do you use?',
             options: ['v3', 'v4'],
             default: $detectedVersion
         );
 
+        $baseColor = select(
+            label: 'Select a base color for your UI',
+            options: [
+                'slate' => 'Slate (Cool)',
+                'zinc' => 'Zinc (Balanced)',
+                'gray' => 'Gray (Neutral)',
+                'neutral' => 'Neutral (Warm)',
+                'stone' => 'Stone (Earth)',
+            ],
+            default: 'slate'
+        );
+
+        $accentColor = select(
+            label: 'Select your primary accent color',
+            options: [
+                'blue' => 'Blue',
+                'indigo' => 'Indigo',
+                'violet' => 'Violet',
+                'rose' => 'Rose',
+                'orange' => 'Orange',
+                'emerald' => 'Emerald',
+            ],
+            default: 'indigo'
+        );
+
         $config = [
             'tailwind' => $version,
+            'theme' => [
+                'base' => $baseColor,
+                'accent' => $accentColor,
+            ],
             'paths' => [
                 'components' => 'app/Livewire/UI',
                 'views' => 'resources/views/components/ui',
@@ -60,16 +90,30 @@ class InitCommand extends Command
             'namespace' => $detectedNamespace.'Livewire\\UI',
         ];
 
-        // 3. Creation with Loader
+        // 3. Creation
         spin(
             fn () => file_put_contents(
-                'php-ui.json',
+                $projectPath.'/php-ui.json',
                 json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             ),
             'Generating configuration file...'
         );
 
-        outro('✅ PHP-UI is ready! You can now run "php-ui add <component>".');
+        // 4. Initial CSS Injection (for v4)
+        if ($version === 'v4') {
+            $cssPath = $projectPath.'/resources/css/app.css';
+            if (file_exists($cssPath)) {
+                $injector = new CssInjector;
+                $vars = [
+                    '--ui-primary' => "var(--color-{$accentColor}-600)",
+                    '--ui-primary-foreground' => '#ffffff',
+                    '--ui-base' => "var(--color-{$baseColor}-950)",
+                ];
+                spin(fn () => $injector->injectVars($cssPath, $vars), 'Injecting theme variables...');
+            }
+        }
+
+        outro('✅ PHP-UI is ready! Theme set to '.ucfirst($accentColor).'.');
 
         return Command::SUCCESS;
     }
