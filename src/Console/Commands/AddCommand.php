@@ -13,6 +13,7 @@ use Jiordiviera\PhpUi\Core\Transformer\DependencyManager;
 use Jiordiviera\PhpUi\Core\Transformer\CssInjector;
 use Jiordiviera\PhpUi\Core\ComponentManifest;
 use Jiordiviera\PhpUi\Core\Detector\ProjectDetector;
+use Jiordiviera\PhpUi\Console\Logo;
 use Illuminate\Filesystem\Filesystem;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -34,7 +35,8 @@ class AddCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('component');
-        intro("✨ Installing component: {$name}");
+        Logo::render();
+        info("📦 Installing component: <comment>{$name}</comment>");
 
         $detector = new ProjectDetector();
         $projectPath = $detector->getProjectRoot();
