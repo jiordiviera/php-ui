@@ -1,0 +1,211 @@
+@props([
+    'items' => [],
+    'variant' => 'vertical', // vertical, horizontal
+    'size' => 'md', // sm, md, lg
+    'lineStyle' => 'solid', // solid, dashed, dotted
+    'animated' => true,
+    'alternating' => false, // Pour le mode vertical: alterne gauche/droite
+])
+
+@php
+    $sizeClasses = [
+        'sm' => [
+            'dot' => 'size-3',
+            'icon' => 'size-4',
+            'iconContainer' => 'size-8',
+            'title' => 'text-sm',
+            'content' => 'text-xs',
+            'gap' => 'gap-3',
+        ],
+        'md' => [
+            'dot' => 'size-4',
+            'icon' => 'size-5',
+            'iconContainer' => 'size-10',
+            'title' => 'text-base',
+            'content' => 'text-sm',
+            'gap' => 'gap-4',
+        ],
+        'lg' => [
+            'dot' => 'size-5',
+            'icon' => 'size-6',
+            'iconContainer' => 'size-12',
+            'title' => 'text-lg',
+            'content' => 'text-base',
+            'gap' => 'gap-5',
+        ],
+    ];
+
+    $lineStyles = [
+        'solid' => 'border-solid',
+        'dashed' => 'border-dashed',
+        'dotted' => 'border-dotted',
+    ];
+
+    $typeColors = [
+        'default' => 'bg-muted-foreground',
+        'create' => 'bg-green-500',
+        'release' => 'bg-blue-500',
+        'fix' => 'bg-orange-500',
+        'feature' => 'bg-purple-500',
+        'milestone' => 'bg-yellow-500',
+        'error' => 'bg-red-500',
+        'info' => 'bg-cyan-500',
+    ];
+
+    $typeIcons = [
+        'default' => '<circle cx="12" cy="12" r="4"/>',
+        'create' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>',
+        'release' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>',
+        'fix' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+        'feature' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>',
+        'milestone' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>',
+        'error' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+        'info' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+    ];
+
+    $sizes = $sizeClasses[$size];
+@endphp
+
+@if($variant === 'vertical')
+<div
+    {{ $attributes->merge(['class' => 'timeline-vertical relative']) }}
+    x-data="{ shown: [] }"
+    x-init="setTimeout(() => shown = {{ json_encode(array_keys($items)) }}, 100)"
+>
+    <div class="relative">
+        {{-- Vertical Line --}}
+        <div class="absolute {{ $alternating ? 'left-1/2 -translate-x-1/2' : 'left-4 md:left-5' }} top-0 bottom-0 w-0.5 bg-border {{ $lineStyles[$lineStyle] }} border-l-2"></div>
+
+        <div class="space-y-6">
+            @foreach($items as $index => $item)
+                @php
+                    $type = $item['type'] ?? 'default';
+                    $color = $typeColors[$type] ?? $typeColors['default'];
+                    $icon = $typeIcons[$type] ?? $typeIcons['default'];
+                    $isLeft = $alternating && $index % 2 === 0;
+                @endphp
+
+                <div
+                    class="relative {{ $sizes['gap'] }} {{ $alternating ? 'flex' : 'pl-12 md:pl-14' }}"
+                    @if($animated)
+                        x-show="shown.includes({{ $index }})"
+                        x-transition:enter="transition ease-out duration-500 delay-{{ $index * 100 }}"
+                        x-transition:enter-start="opacity-0 {{ $isLeft ? 'translate-x-4' : '-translate-x-4' }}"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                    @endif
+                >
+                    @if($alternating)
+                        {{-- Alternating Mode --}}
+                        <div class="flex-1 {{ $isLeft ? 'text-right pr-8' : 'order-2 pl-8' }}">
+                            <div class="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                @if(isset($item['date']))
+                                    <time class="text-xs text-muted-foreground mb-1 block">
+                                        {{ $item['date'] }}
+                                        @if(isset($item['time']))
+                                            <span class="text-muted-foreground/70">at {{ $item['time'] }}</span>
+                                        @endif
+                                    </time>
+                                @endif
+                                <h4 class="font-semibold text-foreground {{ $sizes['title'] }}">{{ $item['title'] }}</h4>
+                                @if(isset($item['description']))
+                                    <p class="text-muted-foreground {{ $sizes['content'] }} mt-1">{{ $item['description'] }}</p>
+                                @endif
+                                @if(isset($item['user']))
+                                    <p class="text-xs text-muted-foreground/70 mt-2">By {{ $item['user'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Central Point --}}
+                        <div class="absolute left-1/2 -translate-x-1/2 {{ $sizes['iconContainer'] }} rounded-full {{ $color }} flex items-center justify-center ring-4 ring-background z-10">
+                            <svg class="{{ $sizes['icon'] }} text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {!! $icon !!}
+                            </svg>
+                        </div>
+
+                        <div class="flex-1 {{ $isLeft ? 'order-2' : '' }}"></div>
+                    @else
+                        {{-- Standard Mode --}}
+                        {{-- Point/Icon --}}
+                        <div class="absolute left-0 {{ $sizes['iconContainer'] }} rounded-full {{ $color }} flex items-center justify-center ring-4 ring-background z-10">
+                            <svg class="{{ $sizes['icon'] }} text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {!! $icon !!}
+                            </svg>
+                        </div>
+
+                        {{-- Content --}}
+                        <div class="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow flex-1">
+                            @if(isset($item['date']))
+                                <time class="text-xs text-muted-foreground mb-1 block">
+                                    {{ $item['date'] }}
+                                    @if(isset($item['time']))
+                                        <span class="text-muted-foreground/70">at {{ $item['time'] }}</span>
+                                    @endif
+                                </time>
+                            @endif
+                            <h4 class="font-semibold text-foreground {{ $sizes['title'] }}">{{ $item['title'] }}</h4>
+                            @if(isset($item['description']))
+                                <p class="text-muted-foreground {{ $sizes['content'] }} mt-1">{{ $item['description'] }}</p>
+                            @endif
+                            @if(isset($item['user']))
+                                <p class="text-xs text-muted-foreground/70 mt-2">By {{ $item['user'] }}</p>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+@else
+{{-- Horizontal Mode --}}
+<div
+    {{ $attributes->merge(['class' => 'timeline-horizontal relative overflow-x-auto pb-4']) }}
+    x-data="{ shown: [] }"
+    x-init="setTimeout(() => shown = {{ json_encode(array_keys($items)) }}, 100)"
+>
+    <div class="relative min-w-max">
+        {{-- Horizontal Line --}}
+        <div class="absolute left-0 right-0 top-4 md:top-5 h-0.5 bg-border {{ $lineStyles[$lineStyle] }} border-t-2"></div>
+
+        <div class="flex {{ $sizes['gap'] }}">
+            @foreach($items as $index => $item)
+                @php
+                    $type = $item['type'] ?? 'default';
+                    $color = $typeColors[$type] ?? $typeColors['default'];
+                    $icon = $typeIcons[$type] ?? $typeIcons['default'];
+                @endphp
+
+                <div
+                    class="relative flex flex-col items-center pt-12 w-48"
+                    @if($animated)
+                        x-show="shown.includes({{ $index }})"
+                        x-transition:enter="transition ease-out duration-500 delay-{{ $index * 100 }}"
+                        x-transition:enter-start="opacity-0 -translate-y-4"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                    @endif
+                >
+                    {{-- Point/Icon --}}
+                    <div class="absolute top-0 {{ $sizes['iconContainer'] }} rounded-full {{ $color }} flex items-center justify-center ring-4 ring-background z-10">
+                        <svg class="{{ $sizes['icon'] }} text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {!! $icon !!}
+                        </svg>
+                    </div>
+
+                    {{-- Content --}}
+                    <div class="text-center">
+                        @if(isset($item['date']))
+                            <time class="text-xs text-muted-foreground mb-1 block">{{ $item['date'] }}</time>
+                        @endif
+                        <h4 class="font-semibold text-foreground {{ $sizes['title'] }}">{{ $item['title'] }}</h4>
+                        @if(isset($item['description']))
+                            <p class="text-muted-foreground {{ $sizes['content'] }} mt-1 line-clamp-2">{{ $item['description'] }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif

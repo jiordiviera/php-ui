@@ -241,6 +241,96 @@ class ComponentManifest
                 'css_vars' => [],
                 'js_stubs' => [],
             ],
+            'stepper' => [
+                'description' => 'Progress indicator for multi-step workflows.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['stepper.js'],
+            ],
+            'timeline' => [
+                'description' => 'Chronological display of events or activities.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'progress-steps' => [
+                'description' => 'Horizontal progress tracker with icons and labels.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'stat-card' => [
+                'description' => 'Card displaying statistics with trends and icons.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'data-table' => [
+                'description' => 'Powerful data table with searching, sorting, and pagination.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'command-palette' => [
+                'description' => 'Global search and command interface.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['command-palette.js'],
+            ],
+            'sortable-list' => [
+                'description' => 'Drag and drop sortable list.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => ['sortablejs'],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['sortable-list.js'],
+            ],
+            'range-slider' => [
+                'description' => 'Single or double handle numeric slider.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['range-slider.js'],
+            ],
+            'empty-state' => [
+                'description' => 'Placeholder for empty data collections.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'code-snippet' => [
+                'description' => 'Code display with line numbers and copy functionality.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['code-snippet.js'],
+            ],
         ];
     }
 }
