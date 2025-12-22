@@ -11,7 +11,7 @@
     "type": "project",
     "require": {
         "php": "^8.2",
-        "laravel/prompts": "^0.1",
+        "laravel/prompts": "^0.1|^0.2|^0.3",
         "illuminate/filesystem": "^11.0"
     },
     "require-dev": {
