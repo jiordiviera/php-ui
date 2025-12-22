@@ -23,6 +23,7 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\search;
 use function Laravel\Prompts\warning;
 
 class AddCommand extends Command
@@ -31,18 +32,34 @@ class AddCommand extends Command
 
     protected function configure()
     {
-        $this->addArgument('component', InputArgument::REQUIRED, 'The name of the component');
+        $this->addArgument('component', InputArgument::OPTIONAL, 'The name of the component');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force overwrite of existing files');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('component');
+
+        if (! $name) {
+            Logo::render();
+            $name = search(
+                label: 'Search for a component to add',
+                options: fn (string $value) => strlen($value) > 0
+                    ? array_filter(array_keys(ComponentManifest::all()), fn ($key) => str_contains($key, $value))
+                    : array_keys(ComponentManifest::all()),
+                placeholder: 'Type to search...'
+            );
+
+            if (! $name) {
+                error('No component selected.');
+                return Command::FAILURE;
+            }
+        } else {
+            Logo::render();
+        }
+
         $force = $input->getOption('force');
-
-        Logo::render();
         info("Installing component: <comment>{$name}</comment>");
-
         $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
         $configPath = $projectPath.'/php-ui.json';
