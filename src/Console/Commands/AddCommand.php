@@ -14,17 +14,16 @@ use Jiordiviera\PhpUi\Core\Transformer\StubTransformer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
-
-use Symfony\Component\Console\Input\InputOption;
-use function Laravel\Prompts\confirm;
 
 class AddCommand extends Command
 {
@@ -40,7 +39,7 @@ class AddCommand extends Command
     {
         $name = $input->getArgument('component');
         $force = $input->getOption('force');
-        
+
         Logo::render();
         info("Installing component: <comment>{$name}</comment>");
 
@@ -145,6 +144,7 @@ class AddCommand extends Command
         // Summary
         if (empty($createdFiles)) {
             error("Could not generate files for component: {$name}. Check if stubs exist or if operation was cancelled.");
+
             return Command::FAILURE;
         }
 
@@ -185,6 +185,7 @@ class AddCommand extends Command
 
         $filesystem->ensureDirectoryExists(dirname($path));
         $filesystem->put($path, $content);
+
         return true;
     }
 }
