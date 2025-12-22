@@ -1,7 +1,25 @@
 #!/usr/bin/env php
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+$autoloadFiles = [
+    __DIR__ . '/../vendor/autoload.php', // Local dev
+    __DIR__ . '/../../../autoload.php',  // Installed in vendor/jiordiviera/php-ui/bin
+    __DIR__ . '/../../../../autoload.php', // Another potential vendor structure
+];
+
+$loaded = false;
+foreach ($autoloadFiles as $file) {
+    if (file_exists($file)) {
+        require $file;
+        $loaded = true;
+        break;
+    }
+}
+
+if (!$loaded) {
+    fwrite(STDERR, "Error: Could not find autoload.php.\n");
+    exit(1);
+}
 
 use Symfony\Component\Console\Application;
 use Jiordiviera\PhpUi\Console\Commands\InitCommand;
