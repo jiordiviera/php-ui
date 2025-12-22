@@ -23,6 +23,9 @@ use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
+use Symfony\Component\Console\Input\InputOption;
+use function Laravel\Prompts\confirm;
+
 class AddCommand extends Command
 {
     protected static $defaultName = 'add';
@@ -30,11 +33,14 @@ class AddCommand extends Command
     protected function configure()
     {
         $this->addArgument('component', InputArgument::REQUIRED, 'The name of the component');
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force overwrite of existing files');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('component');
+        $force = $input->getOption('force');
+        
         Logo::render();
         info("Installing component: <comment>{$name}</comment>");
 
@@ -52,7 +58,7 @@ class AddCommand extends Command
         $config = json_decode(file_get_contents($configPath), true);
         $manifest = ComponentManifest::get($name);
 
-        // 1. Install Dependencies (DependencyManager handles its own prompts/spinners)
+        // 1. Install Dependencies
         $dependencyManager = new DependencyManager;
         if ($manifest && ! empty($manifest['dependencies'])) {
             if (! empty($manifest['dependencies']['composer'])) {
@@ -67,60 +73,59 @@ class AddCommand extends Command
         $transformer = new StubTransformer($config);
         $createdFiles = [];
 
-        spin(function () use ($manifest, $config, $name, $filesystem, $projectPath, $transformer, &$createdFiles) {
-            // Blade Files
-            if ($manifest && ! empty($manifest['files'])) {
-                foreach ($manifest['files'] as $stubName => $targetName) {
-                    $bladeStub = __DIR__."/../../../stubs/{$stubName}";
-                    $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$targetName;
-
-                    if ($filesystem->exists($bladeStub)) {
-                        $content = $transformer->transform($filesystem->get($bladeStub), $name);
-                        $filesystem->ensureDirectoryExists(dirname($bladeTarget));
-                        $filesystem->put($bladeTarget, $content);
-                        $createdFiles[] = $config['paths']['views'].'/'.$targetName;
-                    }
-                }
-            } else {
-                // Default single-file
-                $bladeStub = __DIR__."/../../../stubs/{$name}.blade.php.stub";
-                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
+        // Blade Files
+        if ($manifest && ! empty($manifest['files'])) {
+            foreach ($manifest['files'] as $stubName => $targetName) {
+                $bladeStub = __DIR__."/../../../stubs/{$stubName}";
+                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$targetName;
 
                 if ($filesystem->exists($bladeStub)) {
                     $content = $transformer->transform($filesystem->get($bladeStub), $name);
-                    $filesystem->ensureDirectoryExists(dirname($bladeTarget));
-                    $filesystem->put($bladeTarget, $content);
+                    if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
+                        $createdFiles[] = $config['paths']['views'].'/'.$targetName;
+                    }
+                }
+            }
+        } else {
+            // Default single-file
+            $bladeStub = __DIR__."/../../../stubs/{$name}.blade.php.stub";
+            $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
+
+            if ($filesystem->exists($bladeStub)) {
+                $content = $transformer->transform($filesystem->get($bladeStub), $name);
+                if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
                     $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
                 }
             }
+        }
 
-            // PHP Class (Optional)
-            $phpStub = __DIR__."/../../../stubs/{$name}.php.stub";
-            if ($filesystem->exists($phpStub)) {
-                $phpTarget = $projectPath.'/'.$config['paths']['components'].'/'.ucfirst($name).'.php';
-                $content = $transformer->transform($filesystem->get($phpStub), $name);
-                $filesystem->ensureDirectoryExists(dirname($phpTarget));
-                $filesystem->put($phpTarget, $content);
+        // PHP Class (Optional)
+        $phpStub = __DIR__."/../../../stubs/{$name}.php.stub";
+        if ($filesystem->exists($phpStub)) {
+            $phpTarget = $projectPath.'/'.$config['paths']['components'].'/'.ucfirst($name).'.php';
+            $content = $transformer->transform($filesystem->get($phpStub), $name);
+            if ($this->writeFile($filesystem, $phpTarget, $content, $force)) {
                 $createdFiles[] = $config['paths']['components'].'/'.ucfirst($name).'.php';
             }
+        }
 
-            // JS Stubs
-            if ($manifest && ! empty($manifest['js_stubs'])) {
-                $jsDir = $projectPath.'/resources/js/ui';
-                $filesystem->ensureDirectoryExists($jsDir);
+        // JS Stubs
+        if ($manifest && ! empty($manifest['js_stubs'])) {
+            $jsDir = $projectPath.'/resources/js/ui';
+            $filesystem->ensureDirectoryExists($jsDir);
 
-                foreach ($manifest['js_stubs'] as $jsStubName) {
-                    $jsStubPath = __DIR__."/../../../stubs/{$jsStubName}.stub";
-                    $jsTarget = $jsDir.'/'.$jsStubName;
+            foreach ($manifest['js_stubs'] as $jsStubName) {
+                $jsStubPath = __DIR__."/../../../stubs/{$jsStubName}.stub";
+                $jsTarget = $jsDir.'/'.$jsStubName;
 
-                    if ($filesystem->exists($jsStubPath)) {
-                        $content = $transformer->transform($filesystem->get($jsStubPath), $name);
-                        $filesystem->put($jsTarget, $content);
+                if ($filesystem->exists($jsStubPath)) {
+                    $content = $transformer->transform($filesystem->get($jsStubPath), $name);
+                    if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
                         $createdFiles[] = 'resources/js/ui/'.$jsStubName;
                     }
                 }
             }
-        }, 'Scaffolding files...');
+        }
 
         // 3. Inject CSS Variables
         $cssInjected = false;
@@ -139,8 +144,7 @@ class AddCommand extends Command
 
         // Summary
         if (empty($createdFiles)) {
-            error("Could not find stubs for component: {$name}");
-
+            error("Could not generate files for component: {$name}. Check if stubs exist or if operation was cancelled.");
             return Command::FAILURE;
         }
 
@@ -169,5 +173,18 @@ class AddCommand extends Command
         outro("✅ Component {$name} added successfully!");
 
         return Command::SUCCESS;
+    }
+
+    protected function writeFile(Filesystem $filesystem, string $path, string $content, bool $force): bool
+    {
+        if ($filesystem->exists($path) && ! $force) {
+            if (! confirm("File [{$path}] already exists. Overwrite?", default: false)) {
+                return false;
+            }
+        }
+
+        $filesystem->ensureDirectoryExists(dirname($path));
+        $filesystem->put($path, $content);
+        return true;
     }
 }
