@@ -7,6 +7,7 @@ namespace Jiordiviera\PhpUi\Console\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Jiordiviera\PhpUi\Console\Logo;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
@@ -19,7 +20,7 @@ class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        intro('🚀 Welcome to PHP-UI Installer');
+        Logo::render();
 
         $detector = new \Jiordiviera\PhpUi\Core\Detector\ProjectDetector();
 
