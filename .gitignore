@@ -10,3 +10,4 @@ php-ui.json
 phpunit.xml
 .env
 .phpunit.result.cache
+GEMINI.md

@@ -195,6 +195,60 @@ class ComponentManifest
                     'progress-bar.blade.php.stub' => 'progress-bar.blade.php',
                 ],
             ],
+            'carousel' => [
+                'description' => 'Image carousel with autoplay and navigation.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['carousel.js'],
+            ],
+            'drawer' => [
+                'description' => 'Side panel that slides in from the screen edges.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'skeleton' => [
+                'description' => 'Placeholder loading states for content.',
+                'dependencies' => [
+                    'composer' => [],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'rating' => [
+                'description' => 'Star rating component with read-only and half-star support.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => ['rating.js'],
+            ],
+            'popover' => [
+                'description' => 'Floating panel for detailed information or actions.',
+                'dependencies' => [
+                    'composer' => [],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
+            'kbd' => [
+                'description' => 'Keyboard key indicators.',
+                'dependencies' => [
+                    'composer' => ['mallardduck/blade-lucide-icons'],
+                    'npm' => [],
+                ],
+                'css_vars' => [],
+                'js_stubs' => [],
+            ],
         ];
     }
 }
