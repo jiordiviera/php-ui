@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Jiordiviera\PhpUi\Core\Detector;
 
+use Illuminate\Filesystem\Filesystem;
+
 class ProjectDetector
 {
+    protected Filesystem $files;
+
+    public function __construct(?Filesystem $files = null)
+    {
+        $this->files = $files ?? new Filesystem;
+    }
+
     public function detectTailwindVersion(): string
     {
-        if (file_exists('package.json')) {
-            $package = json_decode(file_get_contents('package.json'), true);
+        if ($this->files->exists('package.json')) {
+            $package = json_decode($this->files->get('package.json'), true);
             $deps = array_merge($package['dependencies'] ?? [], $package['devDependencies'] ?? []);
 
             if (isset($deps['tailwindcss'])) {
@@ -17,8 +26,8 @@ class ProjectDetector
             }
         }
 
-        if (file_exists('resources/css/app.css')) {
-            $content = file_get_contents('resources/css/app.css');
+        if ($this->files->exists('resources/css/app.css')) {
+            $content = $this->files->get('resources/css/app.css');
 
             return str_contains($content, '@theme') ? 'v4' : 'v3';
         }
@@ -31,8 +40,8 @@ class ProjectDetector
         $root = $this->getProjectRoot();
         $composerPath = $root.'/composer.json';
 
-        if (file_exists($composerPath)) {
-            $composer = json_decode(file_get_contents($composerPath), true);
+        if ($this->files->exists($composerPath)) {
+            $composer = json_decode($this->files->get($composerPath), true);
 
             return key($composer['autoload']['psr-4'] ?? ['App\\' => 'app/']) ?: 'App\\';
         }
@@ -51,7 +60,7 @@ class ProjectDetector
         $lastDir = null;
 
         while ($dir !== '/' && $dir !== '.' && $dir !== $lastDir) {
-            if (file_exists($dir.'/composer.json')) {
+            if ($this->files->exists($dir.'/composer.json')) {
                 return $dir;
             }
             $lastDir = $dir;
