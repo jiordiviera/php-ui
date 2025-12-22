@@ -29,8 +29,8 @@ use Jiordiviera\PhpUi\Console\Commands\ListCommand;
 $app = new Application('PHP-UI CLI', '0.1.0');
 
 // Enregistrement des commandes
-$app->addCommand(new InitCommand());
-$app->addCommand(new AddCommand());
-$app->addCommand(new ListCommand());
+$app->add(new InitCommand());
+$app->add(new AddCommand());
+$app->add(new ListCommand());
 
 $app->run();
