@@ -12,7 +12,7 @@
     "require": {
         "php": "^8.2",
         "laravel/prompts": "^0.1|^0.2|^0.3",
-        "illuminate/filesystem": "^11.0"
+        "illuminate/filesystem": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
         "pestphp/pest": "^3.0",
