@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Jiordiviera\PhpUi\Console\Commands;
 
+use Jiordiviera\PhpUi\Console\Logo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Jiordiviera\PhpUi\Console\Logo;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\select;
+
 use function Laravel\Prompts\note;
+use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
 
 class InitCommand extends Command
 {
@@ -22,12 +22,13 @@ class InitCommand extends Command
     {
         Logo::render();
 
-        $detector = new \Jiordiviera\PhpUi\Core\Detector\ProjectDetector();
+        $detector = new \Jiordiviera\PhpUi\Core\Detector\ProjectDetector;
 
         // 1. Analyse avec Loader
         $analysis = spin(
             function () use ($detector) {
                 sleep(1); // Fake delay for UX (user feels "work" is being done)
+
                 return [
                     'version' => $detector->detectTailwindVersion(),
                     'namespace' => $detector->getRootNamespace(),
@@ -56,12 +57,12 @@ class InitCommand extends Command
                 'components' => 'app/Livewire/UI',
                 'views' => 'resources/views/components/ui',
             ],
-            'namespace' => $detectedNamespace . 'Livewire\\UI',
+            'namespace' => $detectedNamespace.'Livewire\\UI',
         ];
 
         // 3. Creation with Loader
         spin(
-            fn() => file_put_contents(
+            fn () => file_put_contents(
                 'php-ui.json',
                 json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             ),

@@ -8,9 +8,6 @@ class ComponentManifest
 {
     /**
      * Get the configuration for a specific component.
-     *
-     * @param string $component
-     * @return array|null
      */
     public static function get(string $component): ?array
     {
@@ -19,8 +16,6 @@ class ComponentManifest
 
     /**
      * Get all available components.
-     *
-     * @return array
      */
     public static function all(): array
     {

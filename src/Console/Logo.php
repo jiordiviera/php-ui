@@ -19,6 +19,6 @@ class Logo
 
 ASCII;
 
-        note($ascii . "\n   Laravel UI Component Scaffolder");
+        note($ascii."\n   Laravel UI Component Scaffolder");
     }
 }

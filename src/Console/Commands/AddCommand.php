@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Jiordiviera\PhpUi\Console\Commands;
 
+use Illuminate\Filesystem\Filesystem;
+use Jiordiviera\PhpUi\Console\Logo;
+use Jiordiviera\PhpUi\Core\ComponentManifest;
+use Jiordiviera\PhpUi\Core\Detector\ProjectDetector;
+use Jiordiviera\PhpUi\Core\Transformer\CssInjector;
+use Jiordiviera\PhpUi\Core\Transformer\DependencyManager;
+use Jiordiviera\PhpUi\Core\Transformer\StubTransformer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Jiordiviera\PhpUi\Core\Transformer\StubTransformer;
-use Jiordiviera\PhpUi\Core\Transformer\DependencyManager;
-use Jiordiviera\PhpUi\Core\Transformer\CssInjector;
-use Jiordiviera\PhpUi\Core\ComponentManifest;
-use Jiordiviera\PhpUi\Core\Detector\ProjectDetector;
-use Jiordiviera\PhpUi\Console\Logo;
-use Illuminate\Filesystem\Filesystem;
-use function Laravel\Prompts\intro;
+
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\warning;
-use function Laravel\Prompts\error;
-use function Laravel\Prompts\note;
 
 class AddCommand extends Command
 {
@@ -36,28 +36,29 @@ class AddCommand extends Command
     {
         $name = $input->getArgument('component');
         Logo::render();
-        info("📦 Installing component: <comment>{$name}</comment>");
+        info("Installing component: <comment>{$name}</comment>");
 
-        $detector = new ProjectDetector();
+        $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
-        $configPath = $projectPath . '/php-ui.json';
-        
-        if (!file_exists($configPath)) {
+        $configPath = $projectPath.'/php-ui.json';
+
+        if (! file_exists($configPath)) {
             error("No php-ui.json file found at {$projectPath}. Please run 'php-ui init' first.");
+
             return Command::FAILURE;
         }
-        
-        $filesystem = new Filesystem();
+
+        $filesystem = new Filesystem;
         $config = json_decode(file_get_contents($configPath), true);
         $manifest = ComponentManifest::get($name);
-        
+
         // 1. Install Dependencies (DependencyManager handles its own prompts/spinners)
-        $dependencyManager = new DependencyManager();
-        if ($manifest && !empty($manifest['dependencies'])) {
-            if (!empty($manifest['dependencies']['composer'])) {
+        $dependencyManager = new DependencyManager;
+        if ($manifest && ! empty($manifest['dependencies'])) {
+            if (! empty($manifest['dependencies']['composer'])) {
                 $dependencyManager->checkAndInstall($manifest['dependencies']['composer'], 'composer');
             }
-            if (!empty($manifest['dependencies']['npm'])) {
+            if (! empty($manifest['dependencies']['npm'])) {
                 $dependencyManager->checkAndInstall($manifest['dependencies']['npm'], 'npm');
             }
         }
@@ -68,54 +69,54 @@ class AddCommand extends Command
 
         spin(function () use ($manifest, $config, $name, $filesystem, $projectPath, $transformer, &$createdFiles) {
             // Blade Files
-            if ($manifest && !empty($manifest['files'])) {
+            if ($manifest && ! empty($manifest['files'])) {
                 foreach ($manifest['files'] as $stubName => $targetName) {
-                    $bladeStub = __DIR__ . "/../../../stubs/{$stubName}";
-                    $bladeTarget = $projectPath . "/" . $config['paths']['views'] . "/" . $targetName;
+                    $bladeStub = __DIR__."/../../../stubs/{$stubName}";
+                    $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$targetName;
 
                     if ($filesystem->exists($bladeStub)) {
                         $content = $transformer->transform($filesystem->get($bladeStub), $name);
                         $filesystem->ensureDirectoryExists(dirname($bladeTarget));
                         $filesystem->put($bladeTarget, $content);
-                        $createdFiles[] = $config['paths']['views'] . "/" . $targetName;
+                        $createdFiles[] = $config['paths']['views'].'/'.$targetName;
                     }
                 }
             } else {
                 // Default single-file
-                $bladeStub = __DIR__ . "/../../../stubs/{$name}.blade.php.stub";
-                $bladeTarget = $projectPath . "/" . $config['paths']['views'] . "/" . strtolower($name) . ".blade.php";
+                $bladeStub = __DIR__."/../../../stubs/{$name}.blade.php.stub";
+                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
 
                 if ($filesystem->exists($bladeStub)) {
                     $content = $transformer->transform($filesystem->get($bladeStub), $name);
                     $filesystem->ensureDirectoryExists(dirname($bladeTarget));
                     $filesystem->put($bladeTarget, $content);
-                    $createdFiles[] = $config['paths']['views'] . "/" . strtolower($name) . ".blade.php";
+                    $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
                 }
             }
 
             // PHP Class (Optional)
-            $phpStub = __DIR__ . "/../../../stubs/{$name}.php.stub";
+            $phpStub = __DIR__."/../../../stubs/{$name}.php.stub";
             if ($filesystem->exists($phpStub)) {
-                 $phpTarget = $projectPath . "/" . $config['paths']['components'] . "/" . ucfirst($name) . ".php";
-                 $content = $transformer->transform($filesystem->get($phpStub), $name);
-                 $filesystem->ensureDirectoryExists(dirname($phpTarget));
-                 $filesystem->put($phpTarget, $content);
-                 $createdFiles[] = $config['paths']['components'] . "/" . ucfirst($name) . ".php";
+                $phpTarget = $projectPath.'/'.$config['paths']['components'].'/'.ucfirst($name).'.php';
+                $content = $transformer->transform($filesystem->get($phpStub), $name);
+                $filesystem->ensureDirectoryExists(dirname($phpTarget));
+                $filesystem->put($phpTarget, $content);
+                $createdFiles[] = $config['paths']['components'].'/'.ucfirst($name).'.php';
             }
 
             // JS Stubs
-            if ($manifest && !empty($manifest['js_stubs'])) {
-                $jsDir = $projectPath . '/resources/js/ui';
+            if ($manifest && ! empty($manifest['js_stubs'])) {
+                $jsDir = $projectPath.'/resources/js/ui';
                 $filesystem->ensureDirectoryExists($jsDir);
 
                 foreach ($manifest['js_stubs'] as $jsStubName) {
-                    $jsStubPath = __DIR__ . "/../../../stubs/{$jsStubName}.stub";
-                    $jsTarget = $jsDir . '/' . $jsStubName;
+                    $jsStubPath = __DIR__."/../../../stubs/{$jsStubName}.stub";
+                    $jsTarget = $jsDir.'/'.$jsStubName;
 
                     if ($filesystem->exists($jsStubPath)) {
                         $content = $transformer->transform($filesystem->get($jsStubPath), $name);
                         $filesystem->put($jsTarget, $content);
-                        $createdFiles[] = 'resources/js/ui/' . $jsStubName;
+                        $createdFiles[] = 'resources/js/ui/'.$jsStubName;
                     }
                 }
             }
@@ -123,15 +124,15 @@ class AddCommand extends Command
 
         // 3. Inject CSS Variables
         $cssInjected = false;
-        if ($manifest && !empty($manifest['css_vars'])) {
-            $cssPath = $projectPath . '/resources/css/app.css';
+        if ($manifest && ! empty($manifest['css_vars'])) {
+            $cssPath = $projectPath.'/resources/css/app.css';
             if ($filesystem->exists($cssPath)) {
-                $injector = new CssInjector();
+                $injector = new CssInjector;
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
-                
+
                 if ($isV4) {
-                     spin(fn() => $injector->injectVars($cssPath, $manifest['css_vars']), 'Injecting CSS variables...');
-                     $cssInjected = true;
+                    spin(fn () => $injector->injectVars($cssPath, $manifest['css_vars']), 'Injecting CSS variables...');
+                    $cssInjected = true;
                 }
             }
         }
@@ -139,6 +140,7 @@ class AddCommand extends Command
         // Summary
         if (empty($createdFiles)) {
             error("Could not find stubs for component: {$name}");
+
             return Command::FAILURE;
         }
 
@@ -149,23 +151,23 @@ class AddCommand extends Command
 
         if ($cssInjected) {
             $summary .= "- <info>CSS variables injected into app.css</info>\n";
-        } elseif ($manifest && !empty($manifest['css_vars']) && !($isV4 ?? false)) {
-             note("Tailwind v3 detected. Please add these variables to your CSS manually:\n" . 
-                  implode("\n", array_map(fn($k, $v) => "$k: $v;", array_keys($manifest['css_vars']), $manifest['css_vars']))
-             );
+        } elseif ($manifest && ! empty($manifest['css_vars']) && ! ($isV4 ?? false)) {
+            note("Tailwind v3 detected. Please add these variables to your CSS manually:\n".
+                 implode("\n", array_map(fn ($k, $v) => "$k: $v;", array_keys($manifest['css_vars']), $manifest['css_vars']))
+            );
         }
 
         // JS Warnings
-        if ($manifest && !empty($manifest['js_stubs'])) {
+        if ($manifest && ! empty($manifest['js_stubs'])) {
             foreach ($manifest['js_stubs'] as $jsStubName) {
-                $relativeJsPath = "./ui/" . str_replace('.js', '', $jsStubName);
+                $relativeJsPath = './ui/'.str_replace('.js', '', $jsStubName);
                 warning("ACTION REQUIRED: Add 'import '{$relativeJsPath}';' to your resources/js/app.js");
             }
         }
 
         note($summary);
         outro("✅ Component {$name} added successfully!");
-        
+
         return Command::SUCCESS;
     }
 }
