@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Jiordiviera\PhpUi\Core;
 
+use Illuminate\Support\Collection;
+
 class ComponentManifest
 {
     /**
@@ -17,9 +19,9 @@ class ComponentManifest
     /**
      * Get all available components.
      */
-    public static function all(): array
+    public static function all(): Collection
     {
-        return [
+        return collect([
             'button' => [
                 'description' => 'A versatile button component with variants, sizes, and icon support.',
                 'dependencies' => [
@@ -331,6 +333,6 @@ class ComponentManifest
                 'css_vars' => [],
                 'js_stubs' => ['code-snippet.js'],
             ],
-        ];
+        ]);
     }
 }
