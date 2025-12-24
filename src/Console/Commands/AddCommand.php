@@ -49,7 +49,7 @@ class AddCommand extends Command
                     : array_keys(ComponentManifest::all()),
                 placeholder: 'Type to search...'
             );
-            dd($name);
+            var_dump($name);
 
             if (! $name) {
                 error('No component selected.');
