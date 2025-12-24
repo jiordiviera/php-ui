@@ -50,7 +50,6 @@ class AddCommand extends Command
                     ->toArray(),
                 placeholder: 'Type to search...'
             );
-            var_dump($name);
 
             if (! $name) {
                 error('No component selected.');
