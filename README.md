@@ -1,5 +1,10 @@
 # PHP-UI
 
+[![Tests](https://github.com/jiordiviera/php-ui/actions/workflows/tests.yml/badge.svg)](https://github.com/jiordiviera/php-ui/actions/workflows/tests.yml)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+[![Total Downloads](https://img.shields.io/packagist/dt/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+[![License](https://img.shields.io/packagist/l/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+
 **A shadcn-like CLI for Laravel Livewire components.**
 
 PHP-UI allows you to scaffold beautifully designed, accessible, and customizable components for your Laravel Livewire applications. It detects your Tailwind setup (v3 or v4) and handles dependencies automatically.
@@ -47,6 +52,33 @@ php-ui add <component-name>
 **Options:**
 
 - `--force` or `-f`: Overwrite existing files without asking.
+- `--url` or `-u`: Install a component from a direct URL.
+- `--registry` or `-r`: Use a custom registry URL.
+- `--repo`: Install from a GitHub repository.
+
+### 4. Install from Remote Sources
+
+PHP-UI supports installing components from remote sources, similar to shadcn/ui.
+
+**From a direct URL:**
+
+```bash
+php-ui add --url https://example.com/my-button.blade.php.stub
+```
+
+**From a GitHub repository:**
+
+```bash
+php-ui add button --repo owner/repo
+php-ui add button --repo owner/repo@branch
+```
+
+**From a custom registry:**
+
+```bash
+php-ui add button --registry https://example.com/registry.json
+php-ui add --registry https://example.com/registry.json  # Interactive search
+```
 
 ## Available Components (25+)
 
@@ -91,6 +123,30 @@ php-ui add <component-name>
 - `kbd`: Keyboard key indicators.
 - `code-snippet`: Code display with copy functionality.
 - `empty-state`: Placeholder for empty collections.
+
+## Creating a Custom Registry
+
+You can host your own component registry. Create a `registry.json` file:
+
+```json
+{
+  "name": "My Custom Components",
+  "baseUrl": "https://raw.githubusercontent.com/username/my-components/main",
+  "components": {
+    "custom-button": {
+      "description": "My custom button component",
+      "dependencies": {
+        "composer": ["mallardduck/blade-lucide-icons"],
+        "npm": []
+      },
+      "css_vars": {},
+      "js_stubs": []
+    }
+  }
+}
+```
+
+Then host your stubs in a `stubs/` folder alongside the registry.
 
 ## Contributing
 

@@ -2,13 +2,22 @@
     "name": "jiordiviera/php-ui",
     "description": "A shadcn-like CLI for Laravel Livewire components.",
     "license": "MIT",
-    "keywords": ["laravel", "livewire", "ui", "components", "scaffold", "cli", "shadcn", "tallstack"],
+    "keywords": [
+        "laravel",
+        "livewire",
+        "ui",
+        "components",
+        "scaffold",
+        "cli",
+        "shadcn",
+        "tallstack"
+    ],
     "homepage": "https://github.com/jiordiviera/php-ui",
     "support": {
         "issues": "https://github.com/jiordiviera/php-ui/issues",
         "source": "https://github.com/jiordiviera/php-ui"
     },
-    "type": "project",
+    "type": "library",
     "require": {
         "php": "^8.2",
         "laravel/prompts": "^0.1|^0.2|^0.3",

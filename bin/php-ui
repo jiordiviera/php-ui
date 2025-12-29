@@ -26,7 +26,7 @@ use Jiordiviera\PhpUi\Console\Commands\InitCommand;
 use Jiordiviera\PhpUi\Console\Commands\AddCommand;
 use Jiordiviera\PhpUi\Console\Commands\ListCommand;
 
-$app = new Application('PHP-UI CLI', '0.1.0');
+$app = new Application('PHP-UI CLI', '1.0.0');
 
 $init = new InitCommand();
 $init->setName('init');
