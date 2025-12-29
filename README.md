@@ -1,5 +1,10 @@
 # PHP-UI
 
+[![Tests](https://github.com/jiordiviera/php-ui/actions/workflows/tests.yml/badge.svg)](https://github.com/jiordiviera/php-ui/actions/workflows/tests.yml)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+[![Total Downloads](https://img.shields.io/packagist/dt/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+[![License](https://img.shields.io/packagist/l/jiordiviera/php-ui.svg?style=flat-square)](https://packagist.org/packages/jiordiviera/php-ui)
+
 **A shadcn-like CLI for Laravel Livewire components.**
 
 PHP-UI allows you to scaffold beautifully designed, accessible, and customizable components for your Laravel Livewire applications. It detects your Tailwind setup (v3 or v4) and handles dependencies automatically.
