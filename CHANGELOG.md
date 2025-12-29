@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `php-ui add <component>` - Add components to your project
   - `php-ui list-components` - List all available components
 
+- **Remote Component Sources** ✨
+  - `--url` option to install from a direct URL
+  - `--registry` option to use a custom registry
+  - `--repo` option to install from GitHub repositories
+  - Support for custom component registries (like shadcn/ui)
+
 - **30+ UI Components**
   - Base & Form: `button`, `input`, `toggle`, `range-slider`, `file-upload`, `date-picker`
   - Navigation: `breadcrumbs`, `tabs`, `modal`, `drawer`, `accordion`
