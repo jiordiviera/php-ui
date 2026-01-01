@@ -29,7 +29,7 @@ class DependencyManager
 
     protected function installComposerPackages(array $packages, string $root, bool $force = false): void
     {
-        $composerPath = $root . '/composer.json';
+        $composerPath = $root.'/composer.json';
         if (! file_exists($composerPath)) {
             return;
         }
@@ -41,7 +41,7 @@ class DependencyManager
             if (! isset($installed[$package])) {
                 if ($force || confirm("The component requires composer package {$package}. Install it?")) {
                     spin(
-                        fn() => shell_exec("composer require {$package} --working-dir=\"{$root}\""),
+                        fn () => shell_exec("composer require {$package} --working-dir=\"{$root}\""),
                         "Installing {$package}..."
                     );
                 }
@@ -51,7 +51,7 @@ class DependencyManager
 
     protected function installNpmPackages(array $packages, string $root, bool $force = false): void
     {
-        $packagePath = $root . '/package.json';
+        $packagePath = $root.'/package.json';
         if (! file_exists($packagePath)) {
             return;
         }
@@ -64,16 +64,16 @@ class DependencyManager
                 if ($force || confirm("The component requires npm package {$package}. Install it?")) {
                     // Try to detect the package manager (npm, yarn, pnpm, bun)
                     $cmd = 'npm install';
-                    if (file_exists($root . '/bun.lockb') || file_exists($root . '/bun.lock')) {
+                    if (file_exists($root.'/bun.lockb') || file_exists($root.'/bun.lock')) {
                         $cmd = 'bun add';
-                    } elseif (file_exists($root . '/pnpm-lock.yaml')) {
+                    } elseif (file_exists($root.'/pnpm-lock.yaml')) {
                         $cmd = 'pnpm add';
-                    } elseif (file_exists($root . '/yarn.lock')) {
+                    } elseif (file_exists($root.'/yarn.lock')) {
                         $cmd = 'yarn add';
                     }
 
                     spin(
-                        fn() => shell_exec("cd \"{$root}\" && {$cmd} {$package}"),
+                        fn () => shell_exec("cd \"{$root}\" && {$cmd} {$package}"),
                         "Installing {$package} via {$cmd}..."
                     );
                 }
