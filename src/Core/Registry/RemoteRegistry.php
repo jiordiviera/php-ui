@@ -48,7 +48,7 @@ class RemoteRegistry
     public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
     {
         $registryUrl = $registryUrl ?? $this->defaultRegistry;
-        
+
         // Try individual component JSON first
         $componentJsonUrl = rtrim($registryUrl, '/')."/registry/{$component}.json";
         $componentData = $this->getComponentJson($componentJsonUrl);
