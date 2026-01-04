@@ -24,12 +24,14 @@ test('it can set custom default registry', function () {
 
 test('it returns null for invalid url', function () {
     // Create a mock registry that overrides httpGet
-    $mockRegistry = new class extends RemoteRegistry {
-        protected function httpGet(string $url): ?string {
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function httpGet(string $url): ?string
+        {
             return null; // Simulate failed request
         }
     };
-    
+
     $result = $mockRegistry->fetchFromUrl('https://example.com/component.stub');
 
     expect($result)->toBeNull();
@@ -37,12 +39,14 @@ test('it returns null for invalid url', function () {
 
 test('it returns empty array for invalid registry', function () {
     // Create a mock registry that overrides getRegistry
-    $mockRegistry = new class extends RemoteRegistry {
-        protected function getRegistry(string $url): ?array {
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function getRegistry(string $url): ?array
+        {
             return null; // Simulate failed request
         }
     };
-    
+
     $result = $mockRegistry->listFromRegistry('https://example.com/registry.json');
 
     expect($result)->toBeArray()->toBeEmpty();
@@ -50,12 +54,14 @@ test('it returns empty array for invalid registry', function () {
 
 test('it parses github repo format with branch', function () {
     // Create a mock registry that overrides httpGet
-    $mockRegistry = new class extends RemoteRegistry {
-        protected function httpGet(string $url): ?string {
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function httpGet(string $url): ?string
+        {
             return null; // Simulate failed request
         }
     };
-    
+
     $result = $mockRegistry->fetchFromGitHub('button', 'nonexistent123/repo456@branch789');
 
     expect($result)->toBeNull();
