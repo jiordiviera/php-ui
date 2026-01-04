@@ -14,11 +14,11 @@ class RemoteRegistry
 
     protected ?Filesystem $files;
     protected Client $httpClient;
-    protected string $defaultRegistry = 'https://raw.githubusercontent.com/jiordiviera/php-ui/develop';
+    protected string $defaultRegistry = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
 
-    protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/develop/stubs';
+    protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/stubs';
 
-    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/develop';
+    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
 
     public function __construct(?Filesystem $files = null, ?Client $httpClient = null)
     {
