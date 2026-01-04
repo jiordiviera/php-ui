@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "title": "PHP-UI Component Registry Item",
+  "description": "Schema for a component definition in the PHP-UI registry",
+  "type": "object",
+  "required": [
+    "name",
+    "type",
+    "description"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The unique name/identifier of the component",
+      "examples": ["button", "modal", "accordion"]
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of registry item",
+      "const": "registry:ui"
+    },
+    "description": {
+      "type": "string",
+      "description": "A short description of what the component does",
+      "examples": [
+        "A versatile button component with variants, sizes, and icon support.",
+        "Accessible modal dialog with backdrop, transition animations, and size options."
+      ]
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Categories the component belongs to",
+      "examples": ["ui", "forms", "interactive"]
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "composer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Composer packages required",
+          "examples": ["mallardduck/blade-lucide-icons"]
+        },
+        "npm": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "NPM packages required",
+          "examples": ["alpinejs", "sortablejs"]
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Map of stub files to their target locations",
+      "patternProperties": {
+        "pattern": "^[^.]+\\.(blade\\.php|js)\\.stub$",
+        "type": "string"
+      },
+      "examples": {
+        "button.blade.php.stub": "button.blade.php",
+        "component.js.stub": "component.js"
+      }
+    },
+    "css_vars": {
+      "type": "object",
+      "description": "Custom CSS variables used by the component",
+      "examples": {
+        "--primary": "hsl(var(--color-primary))"
+      }
+    },
+    "tailwind": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Tailwind configuration extensions",
+          "properties": {
+            "theme": {
+              "type": "object",
+              "description": "Theme extensions",
+              "properties": {
+                "extend": {
+                  "type": "object",
+                  "description": "Extensions to the theme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "js_stubs": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of JavaScript stub files"
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "pattern": "^[^.]+\\.js$",
+            "type": "string"
+          },
+          "description": "Map of JavaScript files to their content"
+        }
+      ]
+    },
+    "source": {
+      "type": "string",
+      "description": "Source URL or location of the component",
+      "examples": [
+        "https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry/button.json",
+        "local registry: /path/to/registry"
+      ]
+    },
+    "registryDependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of other components this component depends on",
+      "examples": ["modal", "button"]
+    }
+  },
+  "additionalProperties": false
+}
