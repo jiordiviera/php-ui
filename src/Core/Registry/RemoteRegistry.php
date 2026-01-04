@@ -16,6 +16,8 @@ class RemoteRegistry
 
     protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/stubs';
 
+    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry';
+
     public function __construct(?Filesystem $files = null)
     {
         $this->files = $files ?? new Filesystem;
@@ -24,7 +26,7 @@ class RemoteRegistry
     /**
      * Fetch a component from a direct URL.
      *
-     * @param string $url The direct URL to the Blade component file
+     * @param  string  $url  The direct URL to the Blade component file
      * @return array{
      *     name: string,
      *     files: array{blade: string},
@@ -57,13 +59,12 @@ class RemoteRegistry
     public function fetchFromRegistry(string $component): ?array
     {
         // Always try direct component file first for complete data
-        $componentUrl = $this->stubsBaseUrl . "/registry/{$component}.json";
+        $componentUrl = $this->registryBaseUrl."/registry/{$component}.json";
         info("Fetching component data from {$componentUrl}");
         $componentData = $this->getComponentJson($componentUrl);
 
-        
         if ($componentData !== null) {
-            return $this->processIndividualComponent($component, $componentData, $this->stubsBaseUrl);
+            return $this->processIndividualComponent($component, $componentData, $this->registryBaseUrl);
         }
 
         return null;
@@ -81,7 +82,7 @@ class RemoteRegistry
             'dependencies' => $componentData['dependencies'] ?? [],
             'css_vars' => $componentData['css_vars'] ?? [],
             'js_stubs' => [],
-            'source' => rtrim($baseUrl, '/') . "/registry/{$component}.json",
+            'source' => rtrim($baseUrl, '/')."/registry/{$component}.json",
             'type' => $componentData['type'] ?? 'registry:ui',
             'registryDependencies' => $componentData['registryDependencies'] ?? [],
         ];
@@ -89,7 +90,7 @@ class RemoteRegistry
         // Process files - object format (PHP-UI style with stub references)
         if (! empty($componentData['files'])) {
             foreach ($componentData['files'] as $stubName => $targetName) {
-                $stubUrl = $this->stubsBaseUrl . '/' . $stubName;
+                $stubUrl = $this->stubsBaseUrl.'/'.$stubName;
                 $content = $this->httpGet($stubUrl);
 
                 if ($content !== null) {
@@ -104,7 +105,7 @@ class RemoteRegistry
         // Fetch JS stubs
         if (! empty($componentData['js_stubs'])) {
             foreach ($componentData['js_stubs'] as $jsStubName) {
-                $jsUrl = $this->stubsBaseUrl . '/' . $jsStubName . '.stub';
+                $jsUrl = $this->stubsBaseUrl.'/'.$jsStubName.'.stub';
                 $content = $this->httpGet($jsUrl);
 
                 if ($content !== null) {
@@ -137,7 +138,7 @@ class RemoteRegistry
     /**
      * List components from a registry.
      *
-     * @return array<string, string>  Component name => description
+     * @return array<string, string> Component name => description
      */
     public function listFromRegistry(?string $registryUrl = null): array
     {
@@ -147,7 +148,7 @@ class RemoteRegistry
         // If custom URL is provided, try it directly
         if ($registryUrl !== $this->defaultRegistry) {
             // Try to get individual component files first
-            $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
+            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
             $registryIndex = $this->getRegistry($registryIndexUrl);
 
             if ($registryIndex !== null && isset($registryIndex['components'])) {
@@ -166,7 +167,7 @@ class RemoteRegistry
             }
         } else {
             // Default registry: try individual files first
-            $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
+            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
             $registryIndex = $this->getRegistry($registryIndexUrl);
 
             // New format with registry index
