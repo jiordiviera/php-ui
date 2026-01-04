@@ -10,11 +10,12 @@ use Jiordiviera\PhpUi\Core\Registry\RemoteRegistry;
 class ComponentManifest
 {
     protected RemoteRegistry $remoteRegistry;
+
     protected static ?array $registry = null;
 
     public function __construct(?RemoteRegistry $registry = null)
     {
-        $this->remoteRegistry = $registry ?? new RemoteRegistry();
+        $this->remoteRegistry = $registry ?? new RemoteRegistry;
     }
 
     /**
@@ -42,7 +43,7 @@ class ComponentManifest
             return self::$registry;
         }
 
-        $registryPath = __DIR__ . '/../../registry.json';
+        $registryPath = __DIR__.'/../../registry.json';
 
         if (! file_exists($registryPath)) {
             return ['components' => []];

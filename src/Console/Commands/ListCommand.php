@@ -25,7 +25,7 @@ class ListCommand extends Command
     {
         Logo::render();
 
-        $manifest = new ComponentManifest();
+        $manifest = new ComponentManifest;
         $components = $manifest->all();
         $rows = [];
 

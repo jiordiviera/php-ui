@@ -24,7 +24,6 @@ use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 use function Laravel\Prompts\warning;
 
 class AddCommand extends Command
@@ -52,7 +51,7 @@ class AddCommand extends Command
 
         $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
-        $configPath = $projectPath . '/php-ui.json';
+        $configPath = $projectPath.'/php-ui.json';
 
         if (! file_exists($configPath)) {
             error("⚠️  No php-ui.json found. Run 'php-ui init' first.");
@@ -67,7 +66,7 @@ class AddCommand extends Command
         if (! $name) {
             $registry = new RemoteRegistry;
             $components = spin(
-                fn() => $registry->listFromRegistry(),
+                fn () => $registry->listFromRegistry(),
                 '📦 Loading component registry...'
             );
 
@@ -77,13 +76,13 @@ class AddCommand extends Command
                 return Command::FAILURE;
             }
 
-            info("Found " . count($components) . " components available");
+            info('Found '.count($components).' components available');
 
             $name = search(
                 label: 'Search for a component',
-                options: fn(string $value) => collect($components)
-                    ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
-                    ->mapWithKeys(fn($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
+                options: fn (string $value) => collect($components)
+                    ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
+                    ->mapWithKeys(fn ($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
                     ->toArray(),
                 placeholder: 'Type to filter components...',
                 hint: 'Use arrow keys to navigate, Enter to select'
@@ -120,8 +119,8 @@ class AddCommand extends Command
         // Fetch from direct URL
         if ($url) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromUrl($url),
-                "📥 Downloading from URL..."
+                fn () => $registry->fetchFromUrl($url),
+                '📥 Downloading from URL...'
             );
 
             if (! $remoteComponent) {
@@ -136,7 +135,7 @@ class AddCommand extends Command
         // Fetch from GitHub repository
         if ($repo) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromGitHub($name, $repo),
+                fn () => $registry->fetchFromGitHub($name, $repo),
                 "📥 Downloading {$name} from GitHub..."
             );
 
@@ -150,7 +149,7 @@ class AddCommand extends Command
         // Fetch from registry
         if (! $url && ! $repo) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromRegistry($name),
+                fn () => $registry->fetchFromRegistry($name),
                 "📥 Downloading {$name}..."
             );
 
@@ -195,11 +194,11 @@ class AddCommand extends Command
 
         // Handle blade content from URL
         if (isset($remoteComponent['files']['blade'])) {
-            $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
+            $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
             $content = $transformer->transform($remoteComponent['files']['blade'], $name);
 
             if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                $createdFiles[] = $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
+                $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
             }
         }
 
@@ -210,11 +209,11 @@ class AddCommand extends Command
             }
 
             if (is_array($fileData) && isset($fileData['content'])) {
-                $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . $fileData['target'];
+                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$fileData['target'];
                 $content = $transformer->transform($fileData['content'], $name);
 
                 if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                    $createdFiles[] = $config['paths']['views'] . '/' . $fileData['target'];
+                    $createdFiles[] = $config['paths']['views'].'/'.$fileData['target'];
                 }
             }
         }
@@ -222,15 +221,15 @@ class AddCommand extends Command
         // Handle JS stubs
         $jsFiles = [];
         if (! empty($remoteComponent['js_stubs'])) {
-            $jsDir = $projectPath . '/resources/js/ui';
+            $jsDir = $projectPath.'/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
 
             foreach ($remoteComponent['js_stubs'] as $jsStubName => $jsContent) {
-                $jsTarget = $jsDir . '/' . $jsStubName;
+                $jsTarget = $jsDir.'/'.$jsStubName;
                 $content = $transformer->transform($jsContent, $name);
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
-                    $createdFiles[] = 'resources/js/ui/' . $jsStubName;
+                    $createdFiles[] = 'resources/js/ui/'.$jsStubName;
                     $jsFiles[] = str_replace('.js', '', (string) $jsStubName);
                 }
             }
@@ -239,13 +238,13 @@ class AddCommand extends Command
         // Inject CSS variables
         $cssInjected = false;
         if (! empty($remoteComponent['css_vars'])) {
-            $cssPath = $projectPath . '/resources/css/app.css';
+            $cssPath = $projectPath.'/resources/css/app.css';
             if ($filesystem->exists($cssPath)) {
                 $injector = new CssInjector;
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
 
                 if ($isV4) {
-                    spin(fn() => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
+                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
                     $cssInjected = true;
                 }
             }
@@ -271,7 +270,7 @@ class AddCommand extends Command
         note("📦 Component: {$name}");
 
         if (! empty($component['description'])) {
-            info("   " . $component['description']);
+            info('   '.$component['description']);
         }
     }
 
@@ -288,13 +287,13 @@ class AddCommand extends Command
         array $config
     ): void {
         echo "\n";
-        info("┌─────────────────────────────────────────────────────────────┐");
+        info('┌─────────────────────────────────────────────────────────────┐');
         info("│  ✅ Component <comment>{$name}</comment> installed successfully!");
-        info("└─────────────────────────────────────────────────────────────┘");
+        info('└─────────────────────────────────────────────────────────────┘');
         echo "\n";
 
         // Files created
-        note("📁 Files created:");
+        note('📁 Files created:');
         foreach ($createdFiles as $file) {
             info("   └─ <comment>{$file}</comment>");
         }
@@ -302,7 +301,7 @@ class AddCommand extends Command
         // Dependencies
         if (! empty($depsInstalled['composer']) || ! empty($depsInstalled['npm'])) {
             echo "\n";
-            note("📦 Dependencies installed:");
+            note('📦 Dependencies installed:');
             foreach ($depsInstalled['composer'] as $dep) {
                 info("   └─ <info>composer</info>: {$dep}");
             }
@@ -314,12 +313,12 @@ class AddCommand extends Command
         // CSS variables
         if ($cssInjected) {
             echo "\n";
-            info("   🎨 CSS variables injected into app.css");
+            info('   🎨 CSS variables injected into app.css');
         } elseif (! empty($manifest['css_vars'])) {
             $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
             if (! $isV4) {
                 echo "\n";
-                warning("⚠️  Tailwind v3 detected. Add these CSS variables manually:");
+                warning('⚠️  Tailwind v3 detected. Add these CSS variables manually:');
                 foreach ($manifest['css_vars'] as $k => $v) {
                     info("   {$k}: {$v};");
                 }
@@ -329,7 +328,7 @@ class AddCommand extends Command
         // JS imports required
         if (! empty($jsFiles)) {
             echo "\n";
-            warning("⚠️  Action required - Add to your resources/js/app.js:");
+            warning('⚠️  Action required - Add to your resources/js/app.js:');
             foreach ($jsFiles as $jsFile) {
                 info("   <comment>import './ui/{$jsFile}';</comment>");
             }
@@ -337,11 +336,11 @@ class AddCommand extends Command
 
         // Usage hint
         echo "\n";
-        note("💡 Usage:");
+        note('💡 Usage:');
         info("   <comment><x-ui.{$name} /></comment>");
         echo "\n";
 
-        outro("🎉 Happy coding!");
+        outro('🎉 Happy coding!');
     }
 
     protected function writeFile(Filesystem $filesystem, string $path, string $content, bool $force): bool

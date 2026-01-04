@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Jiordiviera\PhpUi\Http;
 
-use Jiordiviera\PhpUi\Exceptions\HttpException;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+use Jiordiviera\PhpUi\Exceptions\HttpException;
 use Psr\Http\Message\ResponseInterface;
 
 class Client
@@ -23,10 +23,6 @@ class Client
         ];
     }
 
-
-    /**
-     * @return self
-     */
     public function buildHeaders(array $headers): self
     {
         $headers = array_merge($this->defaultHeaders(), $headers);
@@ -34,77 +30,58 @@ class Client
             'headers' => $headers,
         ]);
 
-
         return $this;
     }
 
-
-
-
     /**
-     * @param string $uri
-     * @param array $query
      * @throws HttpException
      */
     public function get(string $uri, array $query = []): array
     {
-        return $this->request("GET", $uri, [
+        return $this->request('GET', $uri, [
             RequestOptions::QUERY => $query,
         ]);
     }
 
     /**
-     * @param string $uri
-     * @param array $data
-     *
      * @throws HttpException
      */
     public function post(string $uri, array $data = []): array
     {
-        return $this->request("POST", $uri, [
+        return $this->request('POST', $uri, [
             RequestOptions::JSON => $data,
         ]);
     }
 
     /**
-     * @param string $uri
-     * @param array $data
-     *
      * @throws HttpException
      */
     public function put(string $uri, array $data = []): array
     {
-        return $this->request("PUT", $uri, [
+        return $this->request('PUT', $uri, [
             RequestOptions::JSON => $data,
         ]);
     }
 
     /**
-     * @param string $uri
-     * @param array $data
-     *
      * @throws HttpException
      */
     public function patch(string $uri, array $data = []): array
     {
-        return $this->request("PATCH", $uri, [
+        return $this->request('PATCH', $uri, [
             RequestOptions::JSON => $data,
         ]);
     }
 
     /**
-     * @param string $uri
      * @throws HttpException
      */
     public function delete(string $uri): array
     {
-        return $this->request("DELETE", $uri);
+        return $this->request('DELETE', $uri);
     }
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
      * @throws HttpException
      */
     private function request(
@@ -138,7 +115,7 @@ class Client
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new HttpException(
-                "Invalid JSON response: " . json_last_error_msg(),
+                'Invalid JSON response: '.json_last_error_msg(),
             );
         }
 
