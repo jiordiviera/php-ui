@@ -10,7 +10,9 @@ class RemoteRegistry
 {
     protected Filesystem $files;
 
-    protected string $defaultRegistry = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry.json';
+    protected string $defaultRegistry = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
+
+    protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/stubs';
 
     public function __construct(?Filesystem $files = null)
     {
@@ -41,34 +43,44 @@ class RemoteRegistry
     }
 
     /**
-     * Fetch a component from a registry.
+     * Fetch a component from registry (GitHub-based).
      */
     public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
     {
         $registryUrl = $registryUrl ?? $this->defaultRegistry;
-        $registry = $this->getRegistry($registryUrl);
+        
+        // Try individual component JSON first
+        $componentJsonUrl = rtrim($registryUrl, '/')."/registry/{$component}.json";
+        $componentData = $this->getComponentJson($componentJsonUrl);
 
-        if ($registry === null || ! isset($registry['components'][$component])) {
-            return null;
+        if ($componentData !== null) {
+            return $this->processIndividualComponent($component, $componentData, $registryUrl);
         }
 
-        $componentConfig = $registry['components'][$component];
-        $baseUrl = $registry['baseUrl'] ?? dirname($registryUrl);
+        return null;
+    }
 
+    /**
+     * Process individual component JSON.
+     */
+    protected function processIndividualComponent(string $component, array $componentData, string $baseUrl): array
+    {
         $result = [
             'name' => $component,
-            'description' => $componentConfig['description'] ?? '',
+            'description' => $componentData['description'] ?? '',
             'files' => [],
-            'dependencies' => $componentConfig['dependencies'] ?? [],
-            'css_vars' => $componentConfig['css_vars'] ?? [],
+            'dependencies' => $componentData['dependencies'] ?? [],
+            'css_vars' => $componentData['css_vars'] ?? [],
             'js_stubs' => [],
-            'source' => $registryUrl,
+            'source' => rtrim($baseUrl, '/')."/registry/{$component}.json",
+            'type' => $componentData['type'] ?? 'registry:ui',
+            'registryDependencies' => $componentData['registryDependencies'] ?? [],
         ];
 
-        // Fetch blade files
-        if (! empty($componentConfig['files'])) {
-            foreach ($componentConfig['files'] as $stubName => $targetName) {
-                $stubUrl = rtrim($baseUrl, '/').'/stubs/'.$stubName;
+        // Process files - object format (PHP-UI style with stub references)
+        if (! empty($componentData['files'])) {
+            foreach ($componentData['files'] as $stubName => $targetName) {
+                $stubUrl = $this->stubsBaseUrl.'/'.$stubName;
                 $content = $this->httpGet($stubUrl);
 
                 if ($content !== null) {
@@ -78,23 +90,12 @@ class RemoteRegistry
                     ];
                 }
             }
-        } else {
-            // Default single file
-            $stubUrl = rtrim($baseUrl, '/').'/stubs/'.$component.'.blade.php.stub';
-            $content = $this->httpGet($stubUrl);
-
-            if ($content !== null) {
-                $result['files'][$component.'.blade.php.stub'] = [
-                    'content' => $content,
-                    'target' => strtolower($component).'.blade.php',
-                ];
-            }
         }
 
         // Fetch JS stubs
-        if (! empty($componentConfig['js_stubs'])) {
-            foreach ($componentConfig['js_stubs'] as $jsStubName) {
-                $jsUrl = rtrim($baseUrl, '/').'/stubs/'.$jsStubName.'.stub';
+        if (! empty($componentData['js_stubs'])) {
+            foreach ($componentData['js_stubs'] as $jsStubName) {
+                $jsUrl = $this->stubsBaseUrl.'/'.$jsStubName.'.stub';
                 $content = $this->httpGet($jsUrl);
 
                 if ($content !== null) {
@@ -119,7 +120,7 @@ class RemoteRegistry
             [$repo, $branch] = explode('@', $repo, 2);
         }
 
-        $registryUrl = "https://raw.githubusercontent.com/{$repo}/{$branch}/registry.json";
+        $registryUrl = "https://raw.githubusercontent.com/{$repo}/{$branch}";
 
         return $this->fetchFromRegistry($component, $registryUrl);
     }
@@ -130,23 +131,54 @@ class RemoteRegistry
     public function listFromRegistry(?string $registryUrl = null): array
     {
         $registryUrl = $registryUrl ?? $this->defaultRegistry;
-        $registry = $this->getRegistry($registryUrl);
-
-        if ($registry === null) {
-            return [];
-        }
-
         $components = [];
 
-        foreach ($registry['components'] ?? [] as $name => $config) {
-            $components[$name] = $config['description'] ?? $name;
+        // Try to get individual component files first
+        $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
+        $registryIndex = $this->getRegistry($registryIndexUrl);
+
+        if ($registryIndex !== null && isset($registryIndex['components'])) {
+            // New format with registry index
+            foreach ($registryIndex['components'] as $name => $config) {
+                $components[$name] = $config['description'] ?? $name;
+            }
+        } else {
+            // Fallback: try to read individual component files from legacy registry.json
+            $legacyRegistryUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry.json';
+            $registry = $this->getRegistry($legacyRegistryUrl);
+
+            if ($registry !== null) {
+                foreach ($registry['components'] ?? [] as $name => $config) {
+                    $components[$name] = $config['description'] ?? $name;
+                }
+            }
         }
 
         return $components;
     }
 
     /**
-     * Get the registry JSON.
+     * Get component JSON from individual component file.
+     */
+    protected function getComponentJson(string $url): ?array
+    {
+        $content = $this->httpGet($url);
+
+        if ($content === null) {
+            return null;
+        }
+
+        $data = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get registry JSON.
      */
     protected function getRegistry(string $url): ?array
     {

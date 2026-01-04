@@ -105,9 +105,9 @@ class InitCommand extends Command
             if (file_exists($cssPath)) {
                 $injector = new CssInjector;
                 $vars = [
-                    '--ui-primary' => "var(--color-{$accentColor}-600)",
-                    '--ui-primary-foreground' => '#ffffff',
-                    '--ui-base' => "var(--color-{$baseColor}-950)",
+                    '--primary' => "var(--color-{$accentColor}-600)",
+                    '--primary-foreground' => '#ffffff',
+                    '--base' => "var(--color-{$baseColor}-950)",
                 ];
                 spin(fn () => $injector->injectVars($cssPath, $vars), 'Injecting theme variables...');
             }
