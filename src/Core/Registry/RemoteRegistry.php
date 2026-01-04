@@ -149,7 +149,7 @@ class RemoteRegistry
 
         // If custom URL is provided, try it directly
 
-// Always try individual component files from registry/ directory
+        // Always try individual component files from registry/ directory
         $registryDir = dirname($this->defaultRegistry);
         $files = glob($registryDir.'/registry/*.json');
 
