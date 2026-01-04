@@ -21,7 +21,7 @@ class ComponentManifest
     /**
      * Get the configuration for a specific component.
      */
-    public function get(string $component): ?string
+    public function get(string $component): ?array
     {
         return $this->all()[$component] ?? null;
     }
