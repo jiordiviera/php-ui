@@ -254,7 +254,7 @@ class AddCommand extends Command
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
                     $createdFiles[] = 'resources/js/ui/'.$jsStubName;
-                    warning("ACTION REQUIRED: Add 'import './ui/".str_replace('.js', '', $jsStubName)."';' to your resources/js/app.js");
+                    warning("ACTION REQUIRED: Add 'import './ui/".str_replace('.js', '', (string) $jsStubName)."';' to your resources/js/app.js");
                 }
             }
         }
