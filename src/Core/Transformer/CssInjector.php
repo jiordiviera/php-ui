@@ -37,7 +37,7 @@ class CssInjector
             foreach ($vars as $name => $value) {
                 $varLines[] = "  {$name}: {$value};";
             }
-            $content .= "\n@theme {\n" . implode("\n", $varLines) . "\n}\n";
+            $content .= "\n@theme {\n".implode("\n", $varLines)."\n}\n";
         }
 
         $this->files->put($path, $content);
@@ -51,19 +51,19 @@ class CssInjector
             '--color-primary-foreground' => 'hsl(0 0% 98%)',
             '--color-primary-hover' => "hsl(var(--color-{$accentColor}-700))",
             '--color-primary-active' => "hsl(var(--color-{$accentColor}-800))",
-            
+
             // Background colors based on base selection
             '--color-background' => "hsl(var(--color-{$baseColor}-50))",
             '--color-foreground' => "hsl(var(--color-{$baseColor}-900))",
             '--color-muted' => "hsl(var(--color-{$baseColor}-100))",
             '--color-muted-foreground' => "hsl(var(--color-{$baseColor}-500))",
-            
+
             // Surface colors
             '--color-card' => "hsl(var(--color-{$baseColor}-50))",
             '--color-card-foreground' => "hsl(var(--color-{$baseColor}-900))",
             '--color-border' => "hsl(var(--color-{$baseColor}-200))",
             '--color-input' => "hsl(var(--color-{$baseColor}-50))",
-            
+
             // Ring and radius
             '--color-ring' => "hsl(var(--color-{$accentColor}-500))",
             '--radius' => '0.5rem',
@@ -199,7 +199,7 @@ class CssInjector
 
         // Remove existing @theme block if present
         $content = preg_replace('/@theme\s*\{[^}]*\}/', '', $content);
-        
+
         // Generate all color variables for base and accent
         $baseScale = $this->generateColorScale($baseColor);
         $accentScale = $this->generateColorScale($accentColor);
@@ -219,10 +219,10 @@ class CssInjector
         }
 
         // Add new @theme block with all colors
-        $themeBlock = "@theme {\n" . implode("\n", $colorVars) . "\n}";
-        
+        $themeBlock = "@theme {\n".implode("\n", $colorVars)."\n}";
+
         // Add at end of file
-        $content .= "\n" . $themeBlock . "\n";
+        $content .= "\n".$themeBlock."\n";
 
         $this->files->put($path, $content);
     }
