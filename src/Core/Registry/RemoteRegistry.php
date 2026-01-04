@@ -52,7 +52,7 @@ class RemoteRegistry
     /**
      * Fetch a component from registry (GitHub-based).
      */
-    public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
+    public function fetchFromRegistry(string $component): ?array
     {
         // Always try direct component file first for complete data
         $directComponentUrl = $this->stubsBaseUrl . "/registry/{$component}.json";
@@ -132,6 +132,8 @@ class RemoteRegistry
 
     /**
      * List components from a registry.
+     *
+     * @return array<string, string>  Component name => description
      */
     public function listFromRegistry(?string $registryUrl = null): array
     {

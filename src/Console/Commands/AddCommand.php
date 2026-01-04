@@ -46,7 +46,6 @@ class AddCommand extends Command
         $name = $input->getArgument('component');
         $force = $input->getOption('force');
         $url = $input->getOption('url');
-        $registryUrl = $input->getOption('registry');
         $repo = $input->getOption('repo');
 
         $detector = new ProjectDetector;
@@ -67,7 +66,7 @@ class AddCommand extends Command
             $registry = new RemoteRegistry;
             info('Fetching components from registry...');
             $components = spin(
-                fn() => $registry->listFromRegistry($registryUrl),
+                fn() => $registry->listFromRegistry(),
                 'Loading registry...'
             );
 
@@ -108,10 +107,9 @@ class AddCommand extends Command
     ): int {
         $name = $input->getArgument('component');
         $url = $input->getOption('url');
-        $registryUrl = $input->getOption('registry');
         $repo = $input->getOption('repo');
 
-        info("Fetching remote component from source {$registryUrl}...");
+        info("Fetching remote component from source {$name}...");
 
         $registry = new RemoteRegistry;
         $remoteComponent = null;
@@ -157,15 +155,14 @@ class AddCommand extends Command
         // Fetch from custom registry (or default registry if no custom URL)
         if (! $url && ! $repo) {
             if (! $name) {
-                // List available components from registry
-                info("Fetching components from registry: <comment>{$registryUrl}</comment>");
+                // List available components if no name provided
                 $components = spin(
-                    fn() => $registry->listFromRegistry($registryUrl),
+                    fn() => $registry->listFromRegistry(),
                     'Loading registry...'
                 );
 
                 if (empty($components)) {
-                    error("No components found in registry: {$registryUrl}");
+                    error("No components found with the name '{$name}' in registry.");
 
                     return Command::FAILURE;
                 }
@@ -187,12 +184,12 @@ class AddCommand extends Command
 
             info("Fetching component <comment>{$name}</comment> from registry");
             $remoteComponent = spin(
-                fn() => $registry->fetchFromRegistry($name, $registryUrl),
+                fn() => $registry->fetchFromRegistry($name),
                 'Downloading component...'
             );
 
             if (! $remoteComponent) {
-                error("Failed to fetch component '{$name}' from registry: {$registryUrl}");
+                error("Failed to fetch component '{$name}'.");
 
                 return Command::FAILURE;
             }
