@@ -1,6 +1,7 @@
 {
     "name": "jiordiviera/php-ui",
     "description": "A shadcn-like CLI for Laravel Livewire components.",
+    "version": "1.0.0",
     "license": "MIT",
     "keywords": [
         "laravel",
