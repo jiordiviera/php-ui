@@ -56,15 +56,17 @@ class RemoteRegistry
     /**
      * Fetch a component from registry (GitHub-based).
      */
-    public function fetchFromRegistry(string $component): ?array
+    public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
     {
+        $registryUrl = $registryUrl ?? $this->registryBaseUrl;
+
         // Always try direct component file first for complete data
-        $componentUrl = $this->registryBaseUrl . "/registry/{$component}.json";
+        $componentUrl = $registryUrl . "/registry/{$component}.json";
         info("Fetching component data from {$componentUrl}");
         $componentData = $this->getComponentJson($componentUrl);
 
         if ($componentData !== null) {
-            return $this->processIndividualComponent($component, $componentData, $this->registryBaseUrl);
+            return $this->processIndividualComponent($component, $componentData, $registryUrl);
         }
 
         return null;
@@ -148,7 +150,8 @@ class RemoteRegistry
         // If custom URL is provided, try it directly
 
         // Default registry: try individual files first
-        $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
+        $registryIndexUrl = $registryUrl . '/registry.json';
+        info("Fetching registry index from {$registryIndexUrl}");
         $registryIndex = $this->getRegistry($registryIndexUrl);
         // Log registryIndex
         var_dump($registryIndex);
