@@ -2,20 +2,14 @@
 
 use Jiordiviera\PhpUi\Core\Transformer\StubTransformer;
 
-test('it transforms placeholders in stub content', function () {
-    $config = [
-        'namespace' => 'App\\Livewire\\UI',
-        'paths' => [
-            'views' => 'resources/views/components/ui',
-        ],
-    ];
+test('it transforms blade component placeholders', function () {
+    $config = [];
 
     $transformer = new StubTransformer($config);
-    $content = 'namespace {{ namespace }}; class {{ class }} { public $view = "{{ view }}"; }';
+    $content = '<div class="{{ componentName }}-container">{{ componentName }}</div>';
 
     $transformed = $transformer->transform($content, 'button');
 
-    expect($transformed)->toContain('namespace App\\Livewire\\UI;')
-        ->and($transformed)->toContain('class Button')
-        ->and($transformed)->toContain('livewire.ui.button');
+    expect($transformed)->toContain('button-container')
+        ->and($transformed)->toContain('button');
 });

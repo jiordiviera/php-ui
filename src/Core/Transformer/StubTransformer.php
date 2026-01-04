@@ -16,9 +16,6 @@ class StubTransformer
     public function transform(string $content, string $componentName): string
     {
         $replacements = [
-            '{{ namespace }}' => $this->config['namespace'],
-            '{{ class }}' => ucfirst($componentName),
-            '{{ view }}' => 'livewire.ui.'.strtolower($componentName),
             '{{ componentName }}' => strtolower($componentName),
         ];
 
