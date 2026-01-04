@@ -3,7 +3,7 @@
 use Jiordiviera\PhpUi\Core\ComponentManifest;
 
 test('it can retrieve component configuration', function () {
-    $config = (new ComponentManifest())->get('button');
+    $config = (new ComponentManifest)->get('button');
 
     expect($config)->toBeArray()
         ->toHaveKey('description')
@@ -12,7 +12,7 @@ test('it can retrieve component configuration', function () {
 });
 
 test('it returns null for unknown component', function () {
-    $config = (new ComponentManifest())->get('non-existent');
+    $config = (new ComponentManifest)->get('non-existent');
 
     expect($config)->toBeNull();
 });
