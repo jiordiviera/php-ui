@@ -12,7 +12,7 @@
   "files": {
     "sortable-list.blade.php.stub": "sortable-list.blade.php"
   },
-  "js_stubs": ["sortable-list.js.stub"],
+  "js_stubs": ["sortable-list.js"],
   "css_vars": {},
   "tailwind": {
     "config": {

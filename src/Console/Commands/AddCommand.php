@@ -194,6 +194,8 @@ class AddCommand extends Command
 
                 return Command::FAILURE;
             }
+
+            info('Remote component fetched with '.count($remoteComponent['js_stubs']).' JS stubs');
         }
 
         if (! $remoteComponent) {
@@ -248,7 +250,9 @@ class AddCommand extends Command
             $jsDir = $projectPath.'/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
 
+            info('Processing JS stubs: '.count($remoteComponent['js_stubs']).' found');
             foreach ($remoteComponent['js_stubs'] as $jsStubName => $jsContent) {
+                info("Processing JS stub: {$jsStubName}");
                 $jsTarget = $jsDir.'/'.$jsStubName;
                 $content = $transformer->transform($jsContent, $name);
 
