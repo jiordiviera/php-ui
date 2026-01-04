@@ -140,40 +140,20 @@ class RemoteRegistry
      *
      * @return array<string, string> Component name => description
      */
-    public function listFromRegistry(?string $registryUrl = null): array
+    public function listFromRegistry(): array
     {
-        $registryUrl = $registryUrl ?? $this->defaultRegistry;
+        $registryUrl = $this->defaultRegistry;
         $components = [];
 
         // If custom URL is provided, try it directly
-        if ($registryUrl !== $this->defaultRegistry) {
-            // Try to get individual component files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
-            $registryIndex = $this->getRegistry($registryIndexUrl);
 
-            if ($registryIndex !== null && isset($registryIndex['components'])) {
-                // New format with registry index
-                foreach ($registryIndex['components'] as $name => $config) {
-                    $components[$name] = $config['description'] ?? $name;
-                }
-            } else {
-                // Try legacy format for custom URL
-                $registry = $this->getRegistry($registryUrl);
-                if ($registry !== null) {
-                    foreach ($registry['components'] ?? [] as $name => $config) {
-                        $components[$name] = $config['description'] ?? $name;
-                    }
-                }
-            }
-        } else {
-            // Default registry: try individual files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
-            $registryIndex = $this->getRegistry($registryIndexUrl);
+        // Default registry: try individual files first
+        $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
+        $registryIndex = $this->getRegistry($registryIndexUrl);
 
-            // New format with registry index
-            foreach ($registryIndex['components'] as $name => $config) {
-                $components[$name] = $config['description'] ?? $name;
-            }
+        // New format with registry index
+        foreach ($registryIndex['components'] as $name => $config) {
+            $components[$name] = $config['description'] ?? $name;
         }
 
         return $components;
