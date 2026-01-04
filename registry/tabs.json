@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "tabs",
+  "type": "registry:ui",
+  "description": "Tab navigation component with multiple variants and dynamic content.",
+  "categories": ["ui", "navigation", "interactive"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "tabs.blade.php.stub": "tabs.blade.php",
+    "tabs/list.blade.php.stub": "tabs/list.blade.php",
+    "tabs/trigger.blade.php.stub": "tabs/trigger.blade.php",
+    "tabs/content.blade.php.stub": "tabs/content.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "command-palette",
+  "type": "registry:ui",
+  "description": "Command palette with keyboard shortcuts, search, and command execution.",
+  "categories": ["ui", "interactive", "navigation"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "command-palette.blade.php.stub": "command-palette.blade.php"
+  },
+  "js_stubs": ["command-palette.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

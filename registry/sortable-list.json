@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "sortable-list",
+  "type": "registry:ui",
+  "description": "Drag-and-drop sortable list component with handles and animations.",
+  "categories": ["ui", "interactive", "layout"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "sortable-list.blade.php.stub": "sortable-list.blade.php"
+  },
+  "js_stubs": ["sortable-list.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

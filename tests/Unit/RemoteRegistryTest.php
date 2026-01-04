@@ -23,24 +23,46 @@ test('it can set custom default registry', function () {
 });
 
 test('it returns null for invalid url', function () {
-    $registry = new RemoteRegistry;
-    $result = $registry->fetchFromUrl('https://invalid-url-that-does-not-exist.example.com/component.stub');
+    // Create a mock registry that overrides httpGet
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function httpGet(string $url): ?string
+        {
+            return null; // Simulate failed request
+        }
+    };
+
+    $result = $mockRegistry->fetchFromUrl('https://example.com/component.stub');
 
     expect($result)->toBeNull();
 });
 
 test('it returns empty array for invalid registry', function () {
-    $registry = new RemoteRegistry;
-    $result = $registry->listFromRegistry('https://invalid-url-that-does-not-exist.example.com/registry.json');
+    // Create a mock registry that overrides getRegistry
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function getRegistry(string $url): ?array
+        {
+            return null; // Simulate failed request
+        }
+    };
+
+    $result = $mockRegistry->listFromRegistry('https://example.com/registry.json');
 
     expect($result)->toBeArray()->toBeEmpty();
 });
 
 test('it parses github repo format with branch', function () {
-    $registry = new RemoteRegistry;
+    // Create a mock registry that overrides httpGet
+    $mockRegistry = new class extends RemoteRegistry
+    {
+        protected function httpGet(string $url): ?string
+        {
+            return null; // Simulate failed request
+        }
+    };
 
-    // Test that it handles repo@branch format (will fail to fetch but shouldn't error)
-    $result = $registry->fetchFromGitHub('button', 'nonexistent/repo@develop');
+    $result = $mockRegistry->fetchFromGitHub('button', 'nonexistent123/repo456@branch789');
 
-    expect($result)->toBeNull(); // Expected since repo doesn't exist
+    expect($result)->toBeNull();
 });

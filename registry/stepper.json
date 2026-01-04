@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "stepper",
+  "type": "registry:ui",
+  "description": "Multi-step stepper component with horizontal and vertical layouts.",
+  "categories": ["ui", "navigation", "forms"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "stepper.blade.php.stub": "stepper.blade.php"
+  },
+  "js_stubs": ["stepper.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}
