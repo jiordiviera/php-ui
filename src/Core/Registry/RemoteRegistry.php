@@ -6,6 +6,8 @@ namespace Jiordiviera\PhpUi\Core\Registry;
 
 use Illuminate\Filesystem\Filesystem;
 
+use function Laravel\Prompts\info;
+
 class RemoteRegistry
 {
     protected Filesystem $files;
@@ -55,11 +57,13 @@ class RemoteRegistry
     public function fetchFromRegistry(string $component): ?array
     {
         // Always try direct component file first for complete data
-        $directComponentUrl = $this->stubsBaseUrl . "/registry/{$component}.json";
-        $directComponentData = $this->getComponentJson($directComponentUrl);
+        $componentUrl = $this->stubsBaseUrl . "/registry/{$component}.json";
+        info("Fetching component data from {$componentUrl}");
+        $componentData = $this->getComponentJson($componentUrl);
 
-        if ($directComponentData !== null) {
-            return $this->processIndividualComponent($component, $directComponentData, $this->stubsBaseUrl);
+        
+        if ($componentData !== null) {
+            return $this->processIndividualComponent($component, $componentData, $this->stubsBaseUrl);
         }
 
         return null;
