@@ -49,32 +49,43 @@ class InitCommand extends Command
         $version = select(
             label: 'Which version of Tailwind do you use?',
             options: ['v3', 'v4'],
-            default: $detectedVersion
+            default: 'v4'
         );
 
         $baseColor = select(
-            label: 'Select a base color for your UI',
+            label: 'Which color would you like to use as base color?',
             options: [
-                'slate' => 'Slate (Cool)',
-                'zinc' => 'Zinc (Balanced)',
-                'gray' => 'Gray (Neutral)',
-                'neutral' => 'Neutral (Warm)',
-                'stone' => 'Stone (Earth)',
+                'zinc' => 'Zinc',
+                'slate' => 'Slate',
+                'stone' => 'Stone',
+                'gray' => 'Gray',
+                'neutral' => 'Neutral',
             ],
-            default: 'slate'
+            default: 'zinc'
         );
 
         $accentColor = select(
-            label: 'Select your primary accent color',
+            label: 'Which color would you like to use as primary color?',
             options: [
+                'red' => 'Red',
+                'rose' => 'Rose',
+                'orange' => 'Orange',
+                'amber' => 'Amber',
+                'yellow' => 'Yellow',
+                'lime' => 'Lime',
+                'green' => 'Green',
+                'emerald' => 'Emerald',
+                'teal' => 'Teal',
+                'cyan' => 'Cyan',
+                'sky' => 'Sky',
                 'blue' => 'Blue',
                 'indigo' => 'Indigo',
                 'violet' => 'Violet',
-                'rose' => 'Rose',
-                'orange' => 'Orange',
-                'emerald' => 'Emerald',
+                'purple' => 'Purple',
+                'fuchsia' => 'Fuchsia',
+                'pink' => 'Pink',
             ],
-            default: 'indigo'
+            default: 'blue'
         );
 
         $config = [
@@ -104,16 +115,13 @@ class InitCommand extends Command
             $cssPath = $projectPath.'/resources/css/app.css';
             if (file_exists($cssPath)) {
                 $injector = new CssInjector;
-                $vars = [
-                    '--primary' => "var(--color-{$accentColor}-600)",
-                    '--primary-foreground' => '#ffffff',
-                    '--base' => "var(--color-{$baseColor}-950)",
-                ];
-                spin(fn () => $injector->injectVars($cssPath, $vars), 'Injecting theme variables...');
+                $themeVars = $injector->generateThemeVariables($baseColor, $accentColor);
+                spin(fn () => $injector->injectCompleteColorScale($cssPath, $baseColor, $accentColor), 'Injecting complete color scale...');
+                spin(fn () => $injector->injectVars($cssPath, $themeVars), 'Injecting theme variables...');
             }
         }
 
-        outro('✅ PHP-UI is ready! Theme set to '.ucfirst($accentColor).'.');
+        outro("✅ PHP-UI is ready! {$baseColor} + {$accentColor} theme configured.");
 
         return Command::SUCCESS;
     }
