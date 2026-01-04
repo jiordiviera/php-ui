@@ -49,7 +49,34 @@ class RemoteRegistry
     {
         $registryUrl = $registryUrl ?? $this->defaultRegistry;
 
-        // Try individual component JSON first
+        // Handle file:// protocol for local registries
+        if (str_starts_with($registryUrl, 'file://')) {
+            $localPath = substr($registryUrl, 7);
+            
+            if (is_dir($localPath)) {
+                // Directory: look for registry.json
+                $registryIndexPath = rtrim($localPath, '/').'/registry.json';
+                if (file_exists($registryIndexPath)) {
+                    $registryIndex = json_decode(file_get_contents($registryIndexPath), true);
+                    if (isset($registryIndex['components'][$component])) {
+                        $componentData = $registryIndex['components'][$component];
+                        return $this->processLocalComponent($component, $componentData, $localPath);
+                    }
+                }
+            } elseif (file_exists($localPath)) {
+                // Direct file
+                $registryIndex = json_decode(file_get_contents($localPath), true);
+                if (isset($registryIndex['components'][$component])) {
+                    $componentData = $registryIndex['components'][$component];
+                    $baseDir = dirname($localPath);
+                    return $this->processLocalComponent($component, $componentData, $baseDir);
+                }
+            }
+            
+            return null;
+        }
+
+        // Try individual component JSON first for remote registries
         $componentJsonUrl = rtrim($registryUrl, '/')."/registry/{$component}.json";
         $componentData = $this->getComponentJson($componentJsonUrl);
 
@@ -135,9 +162,25 @@ class RemoteRegistry
 
         // If custom URL is provided, try it directly
         if ($registryUrl !== $this->defaultRegistry) {
-            // Try to get individual component files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
-            $registryIndex = $this->getRegistry($registryIndexUrl);
+            // Handle file:// protocol and http(s) URLs
+            if (str_starts_with($registryUrl, 'file://')) {
+                // Remove file:// prefix and treat as local path
+                $localPath = substr($registryUrl, 7);
+                if (is_dir($localPath)) {
+                    // If it's a directory, look for registry.json inside
+                    $registryIndexPath = rtrim($localPath, '/').'/registry.json';
+                    if (file_exists($registryIndexPath)) {
+                        $registryIndex = json_decode(file_get_contents($registryIndexPath), true);
+                    }
+                } elseif (file_exists($localPath)) {
+                    // If it's a file, use it directly
+                    $registryIndex = json_decode(file_get_contents($localPath), true);
+                }
+            } else {
+                // Try to get individual component files first
+                $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
+                $registryIndex = $this->getRegistry($registryIndexUrl);
+            }
 
             if ($registryIndex !== null && isset($registryIndex['components'])) {
                 // New format with registry index
@@ -145,8 +188,15 @@ class RemoteRegistry
                     $components[$name] = $config['description'] ?? $name;
                 }
             } else {
-                // Try legacy format for custom URL
-                $registry = $this->getRegistry($registryUrl);
+                // Try legacy format
+                if (str_starts_with($registryUrl, 'file://')) {
+                    $localPath = substr($registryUrl, 7);
+                    if (file_exists($localPath)) {
+                        $registry = json_decode(file_get_contents($localPath), true);
+                    }
+                } else {
+                    $registry = $this->getRegistry($registryUrl);
+                }
                 if ($registry !== null) {
                     foreach ($registry['components'] ?? [] as $name => $config) {
                         $components[$name] = $config['description'] ?? $name;
