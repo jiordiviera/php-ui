@@ -32,6 +32,7 @@ class AddCommand extends Command
 
     protected function configure()
     {
+        $this->setDescription('Add a UI component to your project');
         $this->addArgument('component', InputArgument::OPTIONAL, 'The name of the component');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force overwrite of existing files');
         $this->addOption('url', 'u', InputOption::VALUE_REQUIRED, 'Install component from a direct URL');
@@ -46,7 +47,6 @@ class AddCommand extends Command
         $name = $input->getArgument('component');
         $force = $input->getOption('force');
         $url = $input->getOption('url');
-        $registryUrl = $input->getOption('registry');
         $repo = $input->getOption('repo');
 
         $detector = new ProjectDetector;
@@ -54,7 +54,7 @@ class AddCommand extends Command
         $configPath = $projectPath.'/php-ui.json';
 
         if (! file_exists($configPath)) {
-            error("No php-ui.json file found at {$projectPath}. Please run 'php-ui init' first.");
+            error("⚠️  No php-ui.json found. Run 'php-ui init' first.");
 
             return Command::FAILURE;
         }
@@ -65,40 +65,44 @@ class AddCommand extends Command
         // If no component name provided, search from remote registry
         if (! $name) {
             $registry = new RemoteRegistry;
-            info('Fetching components from registry...');
             $components = spin(
-                fn () => $registry->listFromRegistry($registryUrl),
-                'Loading registry...'
+                fn () => $registry->listFromRegistry(),
+                '📦 Loading component registry...'
             );
 
             if (empty($components)) {
-                error('No components found in registry.');
+                error('❌ No components found in registry.');
 
                 return Command::FAILURE;
             }
 
+            info('Found '.count($components).' components available');
+
             $name = search(
-                label: 'Search for a component to add',
+                label: 'Search for a component',
                 options: fn (string $value) => collect($components)
                     ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
+                    ->mapWithKeys(fn ($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
                     ->toArray(),
-                placeholder: 'Type to search...'
+                placeholder: 'Type to filter components...',
+                hint: 'Use arrow keys to navigate, Enter to select'
             );
 
             if (! $name) {
-                error('No component selected.');
+                error('❌ No component selected.');
 
                 return Command::FAILURE;
             }
         }
 
-        return $this->installFromRemote($input, $output, $config, $projectPath, $filesystem, $force);
+        return $this->installFromRemote($name, $input, $output, $config, $projectPath, $filesystem, $force);
     }
 
     /**
      * Install component from remote source (URL, registry, or GitHub).
      */
     protected function installFromRemote(
+        string $name,
         InputInterface $input,
         OutputInterface $output,
         array $config,
@@ -106,9 +110,7 @@ class AddCommand extends Command
         Filesystem $filesystem,
         bool $force
     ): int {
-        $name = $input->getArgument('component');
         $url = $input->getOption('url');
-        $registryUrl = $input->getOption('registry');
         $repo = $input->getOption('repo');
 
         $registry = new RemoteRegistry;
@@ -116,14 +118,13 @@ class AddCommand extends Command
 
         // Fetch from direct URL
         if ($url) {
-            info("Fetching component from URL: <comment>{$url}</comment>");
             $remoteComponent = spin(
                 fn () => $registry->fetchFromUrl($url),
-                'Downloading component...'
+                '📥 Downloading from URL...'
             );
 
             if (! $remoteComponent) {
-                error("Failed to fetch component from URL: {$url}");
+                error("❌ Failed to fetch component from: {$url}");
 
                 return Command::FAILURE;
             }
@@ -133,82 +134,54 @@ class AddCommand extends Command
 
         // Fetch from GitHub repository
         if ($repo) {
-            if (! $name) {
-                error('Component name is required when using --repo. Usage: php-ui add button --repo owner/repo');
-
-                return Command::FAILURE;
-            }
-
-            info("Fetching component <comment>{$name}</comment> from GitHub: <comment>{$repo}</comment>");
             $remoteComponent = spin(
                 fn () => $registry->fetchFromGitHub($name, $repo),
-                'Downloading from GitHub...'
+                "📥 Downloading {$name} from GitHub..."
             );
 
             if (! $remoteComponent) {
-                error("Failed to fetch component '{$name}' from repository: {$repo}");
+                error("❌ Failed to fetch '{$name}' from: {$repo}");
 
                 return Command::FAILURE;
             }
         }
 
-        // Fetch from custom registry (or default registry if no custom URL)
+        // Fetch from registry
         if (! $url && ! $repo) {
-            if (! $name) {
-                // List available components from registry
-                info("Fetching components from registry: <comment>{$registryUrl}</comment>");
-                $components = spin(
-                    fn () => $registry->listFromRegistry($registryUrl),
-                    'Loading registry...'
-                );
-
-                if (empty($components)) {
-                    error("No components found in registry: {$registryUrl}");
-
-                    return Command::FAILURE;
-                }
-
-                $name = search(
-                    label: 'Search for a component to add',
-                    options: fn (string $value) => collect($components)
-                        ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
-                        ->toArray(),
-                    placeholder: 'Type to search...'
-                );
-
-                if (! $name) {
-                    error('No component selected.');
-
-                    return Command::FAILURE;
-                }
-            }
-
-            info("Fetching component <comment>{$name}</comment> from registry");
             $remoteComponent = spin(
-                fn () => $registry->fetchFromRegistry($name, $registryUrl),
-                'Downloading component...'
+                fn () => $registry->fetchFromRegistry($name),
+                "📥 Downloading {$name}..."
             );
 
             if (! $remoteComponent) {
-                error("Failed to fetch component '{$name}' from registry: {$registryUrl}");
+                error("❌ Component '{$name}' not found in registry.");
 
                 return Command::FAILURE;
             }
         }
 
         if (! $remoteComponent) {
-            error('No remote component to install.');
+            error('❌ No component to install.');
 
             return Command::FAILURE;
         }
 
+        // Show component info
+        $this->showComponentInfo($name, $remoteComponent);
+
         // Install dependencies
         $dependencyManager = new DependencyManager;
+        $depsInstalled = ['composer' => [], 'npm' => []];
+
         if (! empty($remoteComponent['dependencies'])) {
             if (! empty($remoteComponent['dependencies']['composer'])) {
+                info('📦 Installing Composer dependencies...');
+                $depsInstalled['composer'] = $remoteComponent['dependencies']['composer'];
                 $dependencyManager->checkAndInstall($remoteComponent['dependencies']['composer'], 'composer', $force);
             }
             if (! empty($remoteComponent['dependencies']['npm'])) {
+                info('📦 Installing NPM dependencies...');
+                $depsInstalled['npm'] = $remoteComponent['dependencies']['npm'];
                 $dependencyManager->checkAndInstall($remoteComponent['dependencies']['npm'], 'npm', $force);
             }
         }
@@ -216,6 +189,8 @@ class AddCommand extends Command
         // Transform and write files
         $transformer = new StubTransformer($config);
         $createdFiles = [];
+
+        info('📝 Creating component files...');
 
         // Handle blade content from URL
         if (isset($remoteComponent['files']['blade'])) {
@@ -244,6 +219,7 @@ class AddCommand extends Command
         }
 
         // Handle JS stubs
+        $jsFiles = [];
         if (! empty($remoteComponent['js_stubs'])) {
             $jsDir = $projectPath.'/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
@@ -254,7 +230,7 @@ class AddCommand extends Command
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
                     $createdFiles[] = 'resources/js/ui/'.$jsStubName;
-                    warning("ACTION REQUIRED: Add 'import './ui/".str_replace('.js', '', (string) $jsStubName)."';' to your resources/js/app.js");
+                    $jsFiles[] = str_replace('.js', '', (string) $jsStubName);
                 }
             }
         }
@@ -268,55 +244,109 @@ class AddCommand extends Command
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
 
                 if ($isV4) {
-                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), 'Injecting CSS variables...');
+                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
                     $cssInjected = true;
                 }
             }
         }
 
         if (empty($createdFiles)) {
-            error("Could not generate files for component: {$name}");
+            error("❌ Could not generate files for: {$name}");
 
             return Command::FAILURE;
         }
 
-        $this->showSummary($createdFiles, $cssInjected, $remoteComponent, $config);
-
-        $source = $url ?? $repo ?? $registryUrl ?? 'remote';
-        outro("✅ Component {$name} installed from {$source}!");
+        // Show summary
+        $this->showInstallSummary($name, $createdFiles, $jsFiles, $cssInjected, $depsInstalled, $remoteComponent, $config);
 
         return Command::SUCCESS;
     }
 
     /**
-     * Display summary of created files.
+     * Show component information before installation.
      */
-    protected function showSummary(array $createdFiles, bool $cssInjected, ?array $manifest, array $config): void
+    protected function showComponentInfo(string $name, array $component): void
     {
-        $summary = "Created files:\n";
+        note("📦 Component: {$name}");
+
+        if (! empty($component['description'])) {
+            info('   '.$component['description']);
+        }
+    }
+
+    /**
+     * Display installation summary.
+     */
+    protected function showInstallSummary(
+        string $name,
+        array $createdFiles,
+        array $jsFiles,
+        bool $cssInjected,
+        array $depsInstalled,
+        array $manifest,
+        array $config
+    ): void {
+        echo "\n";
+        info('┌─────────────────────────────────────────────────────────────┐');
+        info("│  ✅ Component <comment>{$name}</comment> installed successfully!");
+        info('└─────────────────────────────────────────────────────────────┘');
+        echo "\n";
+
+        // Files created
+        note('📁 Files created:');
         foreach ($createdFiles as $file) {
-            $summary .= "- <comment>{$file}</comment>\n";
+            info("   └─ <comment>{$file}</comment>");
         }
 
-        if ($cssInjected) {
-            $summary .= "- <info>CSS variables injected into app.css</info>\n";
-        } elseif ($manifest && ! empty($manifest['css_vars'])) {
-            $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
-            if (! $isV4) {
-                note(
-                    "Tailwind v3 detected. Please add these variables to your CSS manually:\n".
-                        implode("\n", array_map(fn ($k, $v) => "$k: $v;", array_keys($manifest['css_vars']), $manifest['css_vars']))
-                );
+        // Dependencies
+        if (! empty($depsInstalled['composer']) || ! empty($depsInstalled['npm'])) {
+            echo "\n";
+            note('📦 Dependencies installed:');
+            foreach ($depsInstalled['composer'] as $dep) {
+                info("   └─ <info>composer</info>: {$dep}");
+            }
+            foreach ($depsInstalled['npm'] as $dep) {
+                info("   └─ <info>npm</info>: {$dep}");
             }
         }
 
-        note($summary);
+        // CSS variables
+        if ($cssInjected) {
+            echo "\n";
+            info('   🎨 CSS variables injected into app.css');
+        } elseif (! empty($manifest['css_vars'])) {
+            $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
+            if (! $isV4) {
+                echo "\n";
+                warning('⚠️  Tailwind v3 detected. Add these CSS variables manually:');
+                foreach ($manifest['css_vars'] as $k => $v) {
+                    info("   {$k}: {$v};");
+                }
+            }
+        }
+
+        // JS imports required
+        if (! empty($jsFiles)) {
+            echo "\n";
+            warning('⚠️  Action required - Add to your resources/js/app.js:');
+            foreach ($jsFiles as $jsFile) {
+                info("   <comment>import './ui/{$jsFile}';</comment>");
+            }
+        }
+
+        // Usage hint
+        echo "\n";
+        note('💡 Usage:');
+        info("   <comment><x-ui.{$name} /></comment>");
+        echo "\n";
+
+        outro('🎉 Happy coding!');
     }
 
     protected function writeFile(Filesystem $filesystem, string $path, string $content, bool $force): bool
     {
         if ($filesystem->exists($path) && ! $force) {
-            if (! confirm("File [{$path}] already exists. Overwrite?", default: false)) {
+            if (! confirm("File already exists: {$path}. Overwrite?", default: false)) {
                 return false;
             }
         }

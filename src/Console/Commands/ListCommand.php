@@ -25,13 +25,14 @@ class ListCommand extends Command
     {
         Logo::render();
 
-        $components = ComponentManifest::all();
+        $manifest = new ComponentManifest;
+        $components = $manifest->all();
         $rows = [];
 
-        foreach ($components as $name => $config) {
+        foreach ($components as $name => $description) {
             $rows[] = [
                 "<info>{$name}</info>",
-                $config['description'] ?? 'No description available',
+                $description ?? 'No description available',
             ];
         }
 

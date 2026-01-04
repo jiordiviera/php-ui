@@ -12,7 +12,7 @@
   "files": {
     "date-picker.blade.php.stub": "date-picker.blade.php"
   },
-  "js_stubs": ["date-picker.js.stub"],
+  "js_stubs": ["date-picker.js"],
   "css_vars": {},
   "tailwind": {
     "config": {

@@ -5,22 +5,35 @@ declare(strict_types=1);
 namespace Jiordiviera\PhpUi\Core\Registry;
 
 use Illuminate\Filesystem\Filesystem;
+use Jiordiviera\PhpUi\Http\Client;
 
 class RemoteRegistry
 {
-    protected Filesystem $files;
+    protected ?Filesystem $files;
+
+    protected Client $httpClient;
 
     protected string $defaultRegistry = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
 
     protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/stubs';
 
-    public function __construct(?Filesystem $files = null)
+    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
+
+    public function __construct(?Filesystem $files = null, ?Client $httpClient = null)
     {
         $this->files = $files ?? new Filesystem;
+        $this->httpClient = $httpClient ?? new Client;
     }
 
     /**
      * Fetch a component from a direct URL.
+     *
+     * @param  string  $url  The direct URL to the Blade component file
+     * @return array{
+     *     name: string,
+     *     files: array{blade: string},
+     *     source: string
+     * }|null
      */
     public function fetchFromUrl(string $url): ?array
     {
@@ -31,7 +44,7 @@ class RemoteRegistry
         }
 
         // Determine file type from URL
-        $filename = basename(parse_url($url, PHP_URL_PATH) ?? 'component.blade.php.stub');
+        $filename = basename(parse_url($url, PHP_URL_PATH));
 
         return [
             'name' => $this->extractComponentName($filename),
@@ -47,11 +60,11 @@ class RemoteRegistry
      */
     public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
     {
-        $registryUrl = $registryUrl ?? $this->defaultRegistry;
+        $registryUrl = $registryUrl ?? $this->registryBaseUrl;
 
-        // Try individual component JSON first
-        $componentJsonUrl = rtrim($registryUrl, '/')."/registry/{$component}.json";
-        $componentData = $this->getComponentJson($componentJsonUrl);
+        // Always try direct component file first for complete data
+        $componentUrl = $registryUrl."/registry/{$component}.json";
+        $componentData = $this->getComponentJson($componentUrl);
 
         if ($componentData !== null) {
             return $this->processIndividualComponent($component, $componentData, $registryUrl);
@@ -127,56 +140,20 @@ class RemoteRegistry
 
     /**
      * List components from a registry.
+     *
+     * @return array<string, string> Component name => description
      */
     public function listFromRegistry(?string $registryUrl = null): array
     {
-        $registryUrl = $registryUrl ?? $this->defaultRegistry;
-        $components = [];
+        $registryUrl = $registryUrl ?? $this->registryBaseUrl.'/registry.json';
 
-        // If custom URL is provided, try it directly
-        if ($registryUrl !== $this->defaultRegistry) {
-            // Try to get individual component files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
-            $registryIndex = $this->getRegistry($registryIndexUrl);
+        $registryData = $this->getRegistry($registryUrl);
 
-            if ($registryIndex !== null && isset($registryIndex['components'])) {
-                // New format with registry index
-                foreach ($registryIndex['components'] as $name => $config) {
-                    $components[$name] = $config['description'] ?? $name;
-                }
-            } else {
-                // Try legacy format for custom URL
-                $registry = $this->getRegistry($registryUrl);
-                if ($registry !== null) {
-                    foreach ($registry['components'] ?? [] as $name => $config) {
-                        $components[$name] = $config['description'] ?? $name;
-                    }
-                }
-            }
-        } else {
-            // Default registry: try individual files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
-            $registryIndex = $this->getRegistry($registryIndexUrl);
-
-            if ($registryIndex !== null && isset($registryIndex['components'])) {
-                // New format with registry index
-                foreach ($registryIndex['components'] as $name => $config) {
-                    $components[$name] = $config['description'] ?? $name;
-                }
-            } else {
-                // Fallback: try to read individual component files from legacy registry.json
-                $legacyRegistryUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry.json';
-                $registry = $this->getRegistry($legacyRegistryUrl);
-
-                if ($registry !== null) {
-                    foreach ($registry['components'] ?? [] as $name => $config) {
-                        $components[$name] = $config['description'] ?? $name;
-                    }
-                }
-            }
+        if ($registryData === null || empty($registryData['components'])) {
+            return [];
         }
 
-        return $components;
+        return $registryData['components'];
     }
 
     /**

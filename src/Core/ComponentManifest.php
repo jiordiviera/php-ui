@@ -5,25 +5,33 @@ declare(strict_types=1);
 namespace Jiordiviera\PhpUi\Core;
 
 use Illuminate\Support\Collection;
+use Jiordiviera\PhpUi\Core\Registry\RemoteRegistry;
 
 class ComponentManifest
 {
+    protected RemoteRegistry $remoteRegistry;
+
     protected static ?array $registry = null;
+
+    public function __construct(?RemoteRegistry $registry = null)
+    {
+        $this->remoteRegistry = $registry ?? new RemoteRegistry;
+    }
 
     /**
      * Get the configuration for a specific component.
      */
-    public static function get(string $component): ?array
+    public function get(string $component): ?array
     {
-        return self::all()[$component] ?? null;
+        return $this->all()[$component] ?? null;
     }
 
     /**
      * Get all available components.
      */
-    public static function all(): Collection
+    public function all(): Collection
     {
-        return collect(self::loadRegistry()['components'] ?? []);
+        return collect($this->remoteRegistry->listFromRegistry());
     }
 
     /**
