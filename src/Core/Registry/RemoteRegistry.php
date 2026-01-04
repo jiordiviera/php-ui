@@ -151,7 +151,7 @@ class RemoteRegistry
         $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
         $registryIndex = $this->getRegistry($registryIndexUrl);
         // Log registryIndex
-        dump($registryIndex);
+        var_dump($registryIndex);
 
         // New format with registry index
         foreach ($registryIndex['components'] as $name => $config) {
