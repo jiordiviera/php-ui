@@ -84,6 +84,7 @@ class AddCommand extends Command
                     ->toArray(),
                 placeholder: 'Type to search...'
             );
+            info("Selected component: <comment>{$name}</comment>");
 
             if (! $name) {
                 error('No component selected.');
@@ -92,13 +93,14 @@ class AddCommand extends Command
             }
         }
 
-        return $this->installFromRemote($input, $output, $config, $projectPath, $filesystem, $force);
+        return $this->installFromRemote($name, $input, $output, $config, $projectPath, $filesystem, $force);
     }
 
     /**
      * Install component from remote source (URL, registry, or GitHub).
      */
     protected function installFromRemote(
+        string $name,
         InputInterface $input,
         OutputInterface $output,
         array $config,
@@ -106,10 +108,8 @@ class AddCommand extends Command
         Filesystem $filesystem,
         bool $force
     ): int {
-        $name = $input->getArgument('component');
         $url = $input->getOption('url');
         $repo = $input->getOption('repo');
-
         info("Fetching remote component from source {$name}...");
 
         $registry = new RemoteRegistry;
@@ -153,37 +153,8 @@ class AddCommand extends Command
             }
         }
 
-        // Fetch from custom registry (or default registry if no custom URL)
+        // Fetch from registry
         if (! $url && ! $repo) {
-            if (! $name) {
-                // List available components if no name provided
-                $components = spin(
-                    fn() => $registry->listFromRegistry(),
-                    'Loading registry...'
-                );
-
-                if (empty($components)) {
-                    error("No components found with the name '{$name}' in registry.");
-
-                    return Command::FAILURE;
-                }
-
-                $name = search(
-                    label: 'Search for a component to add',
-                    options: fn(string $value) => collect($components)
-                        ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
-                        ->mapWithKeys(fn($desc, $key) => [$key => sprintf('%-20s %s', $key, $desc)])
-                        ->toArray(),
-                    placeholder: 'Type to search...'
-                );
-
-                if (! $name) {
-                    error('No component selected.');
-
-                    return Command::FAILURE;
-                }
-            }
-
             info("Fetching component <comment>{$name}</comment> from registry");
             $remoteComponent = spin(
                 fn() => $registry->fetchFromRegistry($name),
