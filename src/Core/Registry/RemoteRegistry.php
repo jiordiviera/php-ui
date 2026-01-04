@@ -16,7 +16,7 @@ class RemoteRegistry
 
     protected string $stubsBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/stubs';
 
-    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main/registry';
+    protected string $registryBaseUrl = 'https://raw.githubusercontent.com/jiordiviera/php-ui/main';
 
     public function __construct(?Filesystem $files = null)
     {
