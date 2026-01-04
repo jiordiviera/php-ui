@@ -21,6 +21,13 @@ class RemoteRegistry
 
     /**
      * Fetch a component from a direct URL.
+     *
+     * @param string $url The direct URL to the Blade component file
+     * @return array{
+     *     name: string,
+     *     files: array{blade: string},
+     *     source: string
+     * }|null
      */
     public function fetchFromUrl(string $url): ?array
     {
@@ -31,7 +38,7 @@ class RemoteRegistry
         }
 
         // Determine file type from URL
-        $filename = basename(parse_url($url, PHP_URL_PATH) ?? 'component.blade.php.stub');
+        $filename = basename(parse_url($url, PHP_URL_PATH));
 
         return [
             'name' => $this->extractComponentName($filename),
@@ -48,7 +55,7 @@ class RemoteRegistry
     public function fetchFromRegistry(string $component, ?string $registryUrl = null): ?array
     {
         // Always try direct component file first for complete data
-        $directComponentUrl = $this->stubsBaseUrl."/registry/{$component}.json";
+        $directComponentUrl = $this->stubsBaseUrl . "/registry/{$component}.json";
         $directComponentData = $this->getComponentJson($directComponentUrl);
 
         if ($directComponentData !== null) {
@@ -70,7 +77,7 @@ class RemoteRegistry
             'dependencies' => $componentData['dependencies'] ?? [],
             'css_vars' => $componentData['css_vars'] ?? [],
             'js_stubs' => [],
-            'source' => rtrim($baseUrl, '/')."/registry/{$component}.json",
+            'source' => rtrim($baseUrl, '/') . "/registry/{$component}.json",
             'type' => $componentData['type'] ?? 'registry:ui',
             'registryDependencies' => $componentData['registryDependencies'] ?? [],
         ];
@@ -78,7 +85,7 @@ class RemoteRegistry
         // Process files - object format (PHP-UI style with stub references)
         if (! empty($componentData['files'])) {
             foreach ($componentData['files'] as $stubName => $targetName) {
-                $stubUrl = $this->stubsBaseUrl.'/'.$stubName;
+                $stubUrl = $this->stubsBaseUrl . '/' . $stubName;
                 $content = $this->httpGet($stubUrl);
 
                 if ($content !== null) {
@@ -93,7 +100,7 @@ class RemoteRegistry
         // Fetch JS stubs
         if (! empty($componentData['js_stubs'])) {
             foreach ($componentData['js_stubs'] as $jsStubName) {
-                $jsUrl = $this->stubsBaseUrl.'/'.$jsStubName.'.stub';
+                $jsUrl = $this->stubsBaseUrl . '/' . $jsStubName . '.stub';
                 $content = $this->httpGet($jsUrl);
 
                 if ($content !== null) {
@@ -134,7 +141,7 @@ class RemoteRegistry
         // If custom URL is provided, try it directly
         if ($registryUrl !== $this->defaultRegistry) {
             // Try to get individual component files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
+            $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
             $registryIndex = $this->getRegistry($registryIndexUrl);
 
             if ($registryIndex !== null && isset($registryIndex['components'])) {
@@ -153,7 +160,7 @@ class RemoteRegistry
             }
         } else {
             // Default registry: try individual files first
-            $registryIndexUrl = rtrim($registryUrl, '/').'/registry.json';
+            $registryIndexUrl = rtrim($registryUrl, '/') . '/registry.json';
             $registryIndex = $this->getRegistry($registryIndexUrl);
 
             // New format with registry index

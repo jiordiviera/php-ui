@@ -51,7 +51,7 @@ class AddCommand extends Command
 
         $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
-        $configPath = $projectPath.'/php-ui.json';
+        $configPath = $projectPath . '/php-ui.json';
 
         if (! file_exists($configPath)) {
             error("No php-ui.json file found at {$projectPath}. Please run 'php-ui init' first.");
@@ -67,7 +67,7 @@ class AddCommand extends Command
             $registry = new RemoteRegistry;
             info('Fetching components from registry...');
             $components = spin(
-                fn () => $registry->listFromRegistry($registryUrl),
+                fn() => $registry->listFromRegistry($registryUrl),
                 'Loading registry...'
             );
 
@@ -79,8 +79,8 @@ class AddCommand extends Command
 
             $name = search(
                 label: 'Search for a component to add',
-                options: fn (string $value) => collect($components)
-                    ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
+                options: fn(string $value) => collect($components)
+                    ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
                     ->toArray(),
                 placeholder: 'Type to search...'
             );
@@ -111,6 +111,8 @@ class AddCommand extends Command
         $registryUrl = $input->getOption('registry');
         $repo = $input->getOption('repo');
 
+        info("Fetching remote component from source {$registryUrl}...");
+
         $registry = new RemoteRegistry;
         $remoteComponent = null;
 
@@ -118,7 +120,7 @@ class AddCommand extends Command
         if ($url) {
             info("Fetching component from URL: <comment>{$url}</comment>");
             $remoteComponent = spin(
-                fn () => $registry->fetchFromUrl($url),
+                fn() => $registry->fetchFromUrl($url),
                 'Downloading component...'
             );
 
@@ -141,7 +143,7 @@ class AddCommand extends Command
 
             info("Fetching component <comment>{$name}</comment> from GitHub: <comment>{$repo}</comment>");
             $remoteComponent = spin(
-                fn () => $registry->fetchFromGitHub($name, $repo),
+                fn() => $registry->fetchFromGitHub($name, $repo),
                 'Downloading from GitHub...'
             );
 
@@ -158,7 +160,7 @@ class AddCommand extends Command
                 // List available components from registry
                 info("Fetching components from registry: <comment>{$registryUrl}</comment>");
                 $components = spin(
-                    fn () => $registry->listFromRegistry($registryUrl),
+                    fn() => $registry->listFromRegistry($registryUrl),
                     'Loading registry...'
                 );
 
@@ -170,8 +172,8 @@ class AddCommand extends Command
 
                 $name = search(
                     label: 'Search for a component to add',
-                    options: fn (string $value) => collect($components)
-                        ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
+                    options: fn(string $value) => collect($components)
+                        ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
                         ->toArray(),
                     placeholder: 'Type to search...'
                 );
@@ -185,7 +187,7 @@ class AddCommand extends Command
 
             info("Fetching component <comment>{$name}</comment> from registry");
             $remoteComponent = spin(
-                fn () => $registry->fetchFromRegistry($name, $registryUrl),
+                fn() => $registry->fetchFromRegistry($name, $registryUrl),
                 'Downloading component...'
             );
 
@@ -195,7 +197,7 @@ class AddCommand extends Command
                 return Command::FAILURE;
             }
 
-            info('Remote component fetched with '.count($remoteComponent['js_stubs']).' JS stubs');
+            info('Remote component fetched with ' . count($remoteComponent['js_stubs']) . ' JS stubs');
         }
 
         if (! $remoteComponent) {
@@ -221,11 +223,11 @@ class AddCommand extends Command
 
         // Handle blade content from URL
         if (isset($remoteComponent['files']['blade'])) {
-            $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
+            $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
             $content = $transformer->transform($remoteComponent['files']['blade'], $name);
 
             if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
+                $createdFiles[] = $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
             }
         }
 
@@ -236,29 +238,29 @@ class AddCommand extends Command
             }
 
             if (is_array($fileData) && isset($fileData['content'])) {
-                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$fileData['target'];
+                $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . $fileData['target'];
                 $content = $transformer->transform($fileData['content'], $name);
 
                 if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                    $createdFiles[] = $config['paths']['views'].'/'.$fileData['target'];
+                    $createdFiles[] = $config['paths']['views'] . '/' . $fileData['target'];
                 }
             }
         }
 
         // Handle JS stubs
         if (! empty($remoteComponent['js_stubs'])) {
-            $jsDir = $projectPath.'/resources/js/ui';
+            $jsDir = $projectPath . '/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
 
-            info('Processing JS stubs: '.count($remoteComponent['js_stubs']).' found');
+            info('Processing JS stubs: ' . count($remoteComponent['js_stubs']) . ' found');
             foreach ($remoteComponent['js_stubs'] as $jsStubName => $jsContent) {
                 info("Processing JS stub: {$jsStubName}");
-                $jsTarget = $jsDir.'/'.$jsStubName;
+                $jsTarget = $jsDir . '/' . $jsStubName;
                 $content = $transformer->transform($jsContent, $name);
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
-                    $createdFiles[] = 'resources/js/ui/'.$jsStubName;
-                    warning("ACTION REQUIRED: Add 'import './ui/".str_replace('.js', '', (string) $jsStubName)."';' to your resources/js/app.js");
+                    $createdFiles[] = 'resources/js/ui/' . $jsStubName;
+                    warning("ACTION REQUIRED: Add 'import './ui/" . str_replace('.js', '', (string) $jsStubName) . "';' to your resources/js/app.js");
                 }
             }
         }
@@ -266,13 +268,13 @@ class AddCommand extends Command
         // Inject CSS variables
         $cssInjected = false;
         if (! empty($remoteComponent['css_vars'])) {
-            $cssPath = $projectPath.'/resources/css/app.css';
+            $cssPath = $projectPath . '/resources/css/app.css';
             if ($filesystem->exists($cssPath)) {
                 $injector = new CssInjector;
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
 
                 if ($isV4) {
-                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), 'Injecting CSS variables...');
+                    spin(fn() => $injector->injectVars($cssPath, $remoteComponent['css_vars']), 'Injecting CSS variables...');
                     $cssInjected = true;
                 }
             }
@@ -308,8 +310,8 @@ class AddCommand extends Command
             $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
             if (! $isV4) {
                 note(
-                    "Tailwind v3 detected. Please add these variables to your CSS manually:\n".
-                        implode("\n", array_map(fn ($k, $v) => "$k: $v;", array_keys($manifest['css_vars']), $manifest['css_vars']))
+                    "Tailwind v3 detected. Please add these variables to your CSS manually:\n" .
+                        implode("\n", array_map(fn($k, $v) => "$k: $v;", array_keys($manifest['css_vars']), $manifest['css_vars']))
                 );
             }
         }
