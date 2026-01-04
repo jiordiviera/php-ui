@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "timeline",
+  "type": "registry:ui",
+  "description": "Timeline component with vertical/horizontal layouts, animations, and multiple event types.",
+  "categories": ["ui", "data", "layout"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "timeline.blade.php.stub": "timeline.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

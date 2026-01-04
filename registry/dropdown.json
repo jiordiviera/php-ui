@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "dropdown",
+  "type": "registry:ui",
+  "description": "Dropdown select component with search, keyboard navigation, and multiple options.",
+  "categories": ["ui", "forms", "interactive"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "dropdown.blade.php.stub": "dropdown.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

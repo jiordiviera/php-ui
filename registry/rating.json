@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "rating",
+  "type": "registry:ui",
+  "description": "Star rating component with half-star support, hover effects, and value display.",
+  "categories": ["ui", "forms", "interactive"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "rating.blade.php.stub": "rating.blade.php"
+  },
+  "js_stubs": ["rating.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

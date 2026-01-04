@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "file-upload",
+  "type": "registry:ui",
+  "description": "File upload component with drag-and-drop, image previews, and progress tracking.",
+  "categories": ["ui", "forms", "interactive"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "file-upload.blade.php.stub": "file-upload.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

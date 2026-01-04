@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "toast",
+  "type": "registry:ui",
+  "description": "Toast notification system with multiple variants, positions, and auto-dismissal.",
+  "categories": ["ui", "feedback", "overlay"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "toast.blade.php.stub": "toast.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

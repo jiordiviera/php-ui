@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "avatar-group",
+  "type": "registry:ui",
+  "description": "Stacked avatar group for displaying multiple users with overflow indicator.",
+  "categories": ["ui", "media", "layout"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "avatar-group.blade.php.stub": "avatar-group.blade.php"
+  },
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

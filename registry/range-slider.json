@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "range-slider",
+  "type": "registry:ui",
+  "description": "Range slider component with single and double handle modes, custom styling.",
+  "categories": ["ui", "forms", "input"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "range-slider.blade.php.stub": "range-slider.blade.php"
+  },
+  "js_stubs": ["range-slider.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

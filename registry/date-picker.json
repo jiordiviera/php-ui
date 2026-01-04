@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "date-picker",
+  "type": "registry:ui",
+  "description": "Date picker with calendar interface, date formatting, and validation.",
+  "categories": ["ui", "forms", "input"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "date-picker.blade.php.stub": "date-picker.blade.php"
+  },
+  "js_stubs": ["date-picker.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}

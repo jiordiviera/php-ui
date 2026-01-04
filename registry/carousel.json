@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jiordiviera/php-ui/main/schema/registry-item.json",
+  "name": "carousel",
+  "type": "registry:ui",
+  "description": "Image carousel with autoplay, navigation arrows, dots indicator, and captions.",
+  "categories": ["ui", "media", "interactive"],
+  "dependencies": {
+    "composer": ["mallardduck/blade-lucide-icons"],
+    "npm": []
+  },
+  "registryDependencies": [],
+  "files": {
+    "carousel.blade.php.stub": "carousel.blade.php"
+  },
+  "js_stubs": ["carousel.js.stub"],
+  "css_vars": {},
+  "tailwind": {
+    "config": {
+      "theme": {
+        "extend": {}
+      }
+    }
+  }
+}
