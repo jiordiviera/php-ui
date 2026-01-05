@@ -329,9 +329,16 @@ class AddCommand extends Command
         if (! empty($jsFiles)) {
             echo "\n";
             warning('⚠️  Action required - Add to your resources/js/app.js:');
+            echo "\n";
             foreach ($jsFiles as $jsFile) {
-                info("   <comment>import './ui/{$jsFile}';</comment>");
+                info("   <comment>import {$jsFile} from './ui/{$jsFile}'</comment>");
             }
+            echo "\n";
+            info("   <comment>document.addEventListener('alpine:init', () => {</comment>");
+            foreach ($jsFiles as $jsFile) {
+                info("       <comment>Alpine.data('{$jsFile}', {$jsFile});</comment>");
+            }
+            info('   <comment>});</comment>');
         }
 
         // Usage hint
