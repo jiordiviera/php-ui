@@ -19,14 +19,6 @@ class ComponentManifest
     }
 
     /**
-     * Get the configuration for a specific component.
-     */
-    public function get(string $component): ?array
-    {
-        return $this->all()[$component] ?? null;
-    }
-
-    /**
      * Get all available components.
      */
     public function all(): Collection
@@ -59,27 +51,5 @@ class ComponentManifest
         self::$registry = $data;
 
         return self::$registry;
-    }
-
-    /**
-     * Get registry metadata (name, version, baseUrl).
-     */
-    public static function getRegistryInfo(): array
-    {
-        $registry = self::loadRegistry();
-
-        return [
-            'name' => $registry['name'] ?? 'PHP-UI',
-            'version' => $registry['version'] ?? '1.0.0',
-            'baseUrl' => $registry['baseUrl'] ?? '',
-        ];
-    }
-
-    /**
-     * Clear cached registry (useful for testing).
-     */
-    public static function clearCache(): void
-    {
-        self::$registry = null;
     }
 }
