@@ -12,6 +12,7 @@
   "files": {
     "accordion.blade.php.stub": "accordion.blade.php"
   },
+  "js_stubs": ["accordion.js"],
   "css_vars": {},
   "tailwind": {
     "config": {
