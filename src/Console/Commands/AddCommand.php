@@ -22,7 +22,7 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\search;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
@@ -77,21 +77,17 @@ class AddCommand extends Command
 
             info('Found ' . count($components) . ' components available');
 
-            $selected = search(
-                label: 'Search for a component',
-                options: fn(string $value) => collect($components)
-                    ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
-                    ->mapWithKeys(fn($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
-                    ->toArray(),
-                placeholder: 'Type to filter components...',
-                hint: 'Use arrow keys to navigate, Enter to select'
+            $selected = multiselect(
+                label: 'Select components to install',
+                options: $components,
+                hint: 'Use space to select, enter to confirm'
             );
 
-            if (! $selected) {
-                error('❌ No component selected.');
+            if (empty($selected)) {
+                error('❌ No components selected.');
                 return Command::FAILURE;
             }
-            $names = [$selected];
+            $names = $selected;
         }
 
         $result = Command::SUCCESS;
