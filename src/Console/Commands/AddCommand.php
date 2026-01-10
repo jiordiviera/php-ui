@@ -32,8 +32,8 @@ class AddCommand extends Command
 
     protected function configure()
     {
-        $this->setDescription('Add a UI component to your project');
-        $this->addArgument('component', InputArgument::OPTIONAL, 'The name of the component');
+        $this->setDescription('Add one or more UI components to your project');
+        $this->addArgument('component', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'The name(s) of the component(s)');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force overwrite of existing files');
         $this->addOption('url', 'u', InputOption::VALUE_REQUIRED, 'Install component from a direct URL');
         $this->addOption('registry', 'r', InputOption::VALUE_REQUIRED, 'Use a custom registry URL');
@@ -44,14 +44,14 @@ class AddCommand extends Command
     {
         Logo::render();
 
-        $name = $input->getArgument('component');
+        $names = $input->getArgument('component');
         $force = $input->getOption('force');
         $url = $input->getOption('url');
         $repo = $input->getOption('repo');
 
         $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
-        $configPath = $projectPath.'/php-ui.json';
+        $configPath = $projectPath . '/php-ui.json';
 
         if (! file_exists($configPath)) {
             error("⚠️  No php-ui.json found. Run 'php-ui init' first.");
@@ -63,39 +63,45 @@ class AddCommand extends Command
         $config = json_decode(file_get_contents($configPath), true);
 
         // If no component name provided, search from remote registry
-        if (! $name) {
+        if (empty($names)) {
             $registry = new RemoteRegistry;
             $components = spin(
-                fn () => $registry->listFromRegistry(),
+                fn() => $registry->listFromRegistry(),
                 '📦 Loading component registry...'
             );
 
             if (empty($components)) {
                 error('❌ No components found in registry.');
-
                 return Command::FAILURE;
             }
 
-            info('Found '.count($components).' components available');
+            info('Found ' . count($components) . ' components available');
 
-            $name = search(
+            $selected = search(
                 label: 'Search for a component',
-                options: fn (string $value) => collect($components)
-                    ->filter(fn ($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
-                    ->mapWithKeys(fn ($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
+                options: fn(string $value) => collect($components)
+                    ->filter(fn($desc, $key) => strlen($value) === 0 || str_contains($key, $value))
+                    ->mapWithKeys(fn($desc, $key) => [$key => sprintf('%-18s │ %s', $key, $desc)])
                     ->toArray(),
                 placeholder: 'Type to filter components...',
                 hint: 'Use arrow keys to navigate, Enter to select'
             );
 
-            if (! $name) {
+            if (! $selected) {
                 error('❌ No component selected.');
-
                 return Command::FAILURE;
             }
+            $names = [$selected];
         }
 
-        return $this->installFromRemote($name, $input, $output, $config, $projectPath, $filesystem, $force);
+        $result = Command::SUCCESS;
+        foreach ($names as $name) {
+            $status = $this->installFromRemote($name, $input, $output, $config, $projectPath, $filesystem, $force);
+            if ($status !== Command::SUCCESS) {
+                $result = $status;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -119,7 +125,7 @@ class AddCommand extends Command
         // Fetch from direct URL
         if ($url) {
             $remoteComponent = spin(
-                fn () => $registry->fetchFromUrl($url),
+                fn() => $registry->fetchFromUrl($url),
                 '📥 Downloading from URL...'
             );
 
@@ -135,7 +141,7 @@ class AddCommand extends Command
         // Fetch from GitHub repository
         if ($repo) {
             $remoteComponent = spin(
-                fn () => $registry->fetchFromGitHub($name, $repo),
+                fn() => $registry->fetchFromGitHub($name, $repo),
                 "📥 Downloading {$name} from GitHub..."
             );
 
@@ -149,7 +155,7 @@ class AddCommand extends Command
         // Fetch from registry
         if (! $url && ! $repo) {
             $remoteComponent = spin(
-                fn () => $registry->fetchFromRegistry($name),
+                fn() => $registry->fetchFromRegistry($name),
                 "📥 Downloading {$name}..."
             );
 
@@ -194,11 +200,11 @@ class AddCommand extends Command
 
         // Handle blade content from URL
         if (isset($remoteComponent['files']['blade'])) {
-            $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
+            $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
             $content = $transformer->transform($remoteComponent['files']['blade'], $name);
 
             if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
+                $createdFiles[] = $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
             }
         }
 
@@ -209,11 +215,11 @@ class AddCommand extends Command
             }
 
             if (is_array($fileData) && isset($fileData['content'])) {
-                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$fileData['target'];
+                $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . $fileData['target'];
                 $content = $transformer->transform($fileData['content'], $name);
 
                 if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                    $createdFiles[] = $config['paths']['views'].'/'.$fileData['target'];
+                    $createdFiles[] = $config['paths']['views'] . '/' . $fileData['target'];
                 }
             }
         }
@@ -221,15 +227,15 @@ class AddCommand extends Command
         // Handle JS stubs
         $jsFiles = [];
         if (! empty($remoteComponent['js_stubs'])) {
-            $jsDir = $projectPath.'/resources/js/ui';
+            $jsDir = $projectPath . '/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
 
             foreach ($remoteComponent['js_stubs'] as $jsStubName => $jsContent) {
-                $jsTarget = $jsDir.'/'.$jsStubName;
+                $jsTarget = $jsDir . '/' . $jsStubName;
                 $content = $transformer->transform($jsContent, $name);
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
-                    $createdFiles[] = 'resources/js/ui/'.$jsStubName;
+                    $createdFiles[] = 'resources/js/ui/' . $jsStubName;
                     $jsFiles[] = str_replace('.js', '', (string) $jsStubName);
                 }
             }
@@ -238,13 +244,13 @@ class AddCommand extends Command
         // Inject CSS variables
         $cssInjected = false;
         if (! empty($remoteComponent['css_vars'])) {
-            $cssPath = $projectPath.'/resources/css/app.css';
+            $cssPath = $projectPath . '/resources/css/app.css';
             if ($filesystem->exists($cssPath)) {
                 $injector = new CssInjector;
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
 
                 if ($isV4) {
-                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
+                    spin(fn() => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
                     $cssInjected = true;
                 }
             }
@@ -270,7 +276,7 @@ class AddCommand extends Command
         note("📦 Component: {$name}");
 
         if (! empty($component['description'])) {
-            info('   '.$component['description']);
+            info('   ' . $component['description']);
         }
     }
 
