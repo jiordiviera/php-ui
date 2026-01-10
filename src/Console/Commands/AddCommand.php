@@ -20,9 +20,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
@@ -51,7 +51,7 @@ class AddCommand extends Command
 
         $detector = new ProjectDetector;
         $projectPath = $detector->getProjectRoot();
-        $configPath = $projectPath . '/php-ui.json';
+        $configPath = $projectPath.'/php-ui.json';
 
         if (! file_exists($configPath)) {
             error("⚠️  No php-ui.json found. Run 'php-ui init' first.");
@@ -66,16 +66,17 @@ class AddCommand extends Command
         if (empty($names)) {
             $registry = new RemoteRegistry;
             $components = spin(
-                fn() => $registry->listFromRegistry(),
+                fn () => $registry->listFromRegistry(),
                 '📦 Loading component registry...'
             );
 
             if (empty($components)) {
-                error('❌ No components found in registry.');
+                error('No components found in registry.');
+
                 return Command::FAILURE;
             }
 
-            info('Found ' . count($components) . ' components available');
+            info('Found '.count($components).' components available');
 
             $selected = multiselect(
                 label: 'Select components to install',
@@ -84,7 +85,8 @@ class AddCommand extends Command
             );
 
             if (empty($selected)) {
-                error('❌ No components selected.');
+                error('No components selected.');
+
                 return Command::FAILURE;
             }
             $names = $selected;
@@ -97,6 +99,7 @@ class AddCommand extends Command
                 $result = $status;
             }
         }
+
         return $result;
     }
 
@@ -121,12 +124,12 @@ class AddCommand extends Command
         // Fetch from direct URL
         if ($url) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromUrl($url),
+                fn () => $registry->fetchFromUrl($url),
                 '📥 Downloading from URL...'
             );
 
             if (! $remoteComponent) {
-                error("❌ Failed to fetch component from: {$url}");
+                error("Failed to fetch component from: {$url}");
 
                 return Command::FAILURE;
             }
@@ -137,12 +140,12 @@ class AddCommand extends Command
         // Fetch from GitHub repository
         if ($repo) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromGitHub($name, $repo),
+                fn () => $registry->fetchFromGitHub($name, $repo),
                 "📥 Downloading {$name} from GitHub..."
             );
 
             if (! $remoteComponent) {
-                error("❌ Failed to fetch '{$name}' from: {$repo}");
+                error("Failed to fetch '{$name}' from: {$repo}");
 
                 return Command::FAILURE;
             }
@@ -151,19 +154,19 @@ class AddCommand extends Command
         // Fetch from registry
         if (! $url && ! $repo) {
             $remoteComponent = spin(
-                fn() => $registry->fetchFromRegistry($name),
+                fn () => $registry->fetchFromRegistry($name),
                 "📥 Downloading {$name}..."
             );
 
             if (! $remoteComponent) {
-                error("❌ Component '{$name}' not found in registry.");
+                error("Component '{$name}' not found in registry.");
 
                 return Command::FAILURE;
             }
         }
 
         if (! $remoteComponent) {
-            error('❌ No component to install.');
+            error('No component to install.');
 
             return Command::FAILURE;
         }
@@ -196,11 +199,11 @@ class AddCommand extends Command
 
         // Handle blade content from URL
         if (isset($remoteComponent['files']['blade'])) {
-            $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
+            $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.strtolower($name).'.blade.php';
             $content = $transformer->transform($remoteComponent['files']['blade'], $name);
 
             if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                $createdFiles[] = $config['paths']['views'] . '/' . strtolower($name) . '.blade.php';
+                $createdFiles[] = $config['paths']['views'].'/'.strtolower($name).'.blade.php';
             }
         }
 
@@ -211,11 +214,11 @@ class AddCommand extends Command
             }
 
             if (is_array($fileData) && isset($fileData['content'])) {
-                $bladeTarget = $projectPath . '/' . $config['paths']['views'] . '/' . $fileData['target'];
+                $bladeTarget = $projectPath.'/'.$config['paths']['views'].'/'.$fileData['target'];
                 $content = $transformer->transform($fileData['content'], $name);
 
                 if ($this->writeFile($filesystem, $bladeTarget, $content, $force)) {
-                    $createdFiles[] = $config['paths']['views'] . '/' . $fileData['target'];
+                    $createdFiles[] = $config['paths']['views'].'/'.$fileData['target'];
                 }
             }
         }
@@ -223,15 +226,15 @@ class AddCommand extends Command
         // Handle JS stubs
         $jsFiles = [];
         if (! empty($remoteComponent['js_stubs'])) {
-            $jsDir = $projectPath . '/resources/js/ui';
+            $jsDir = $projectPath.'/resources/js/ui';
             $filesystem->ensureDirectoryExists($jsDir);
 
             foreach ($remoteComponent['js_stubs'] as $jsStubName => $jsContent) {
-                $jsTarget = $jsDir . '/' . $jsStubName;
+                $jsTarget = $jsDir.'/'.$jsStubName;
                 $content = $transformer->transform($jsContent, $name);
 
                 if ($this->writeFile($filesystem, $jsTarget, $content, $force)) {
-                    $createdFiles[] = 'resources/js/ui/' . $jsStubName;
+                    $createdFiles[] = 'resources/js/ui/'.$jsStubName;
                     $jsFiles[] = str_replace('.js', '', (string) $jsStubName);
                 }
             }
@@ -240,20 +243,20 @@ class AddCommand extends Command
         // Inject CSS variables
         $cssInjected = false;
         if (! empty($remoteComponent['css_vars'])) {
-            $cssPath = $projectPath . '/resources/css/app.css';
+            $cssPath = $projectPath.'/resources/css/app.css';
             if ($filesystem->exists($cssPath)) {
                 $injector = new CssInjector;
                 $isV4 = ($config['tailwind'] ?? 'v3') === 'v4';
 
                 if ($isV4) {
-                    spin(fn() => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
+                    spin(fn () => $injector->injectVars($cssPath, $remoteComponent['css_vars']), '🎨 Injecting CSS variables...');
                     $cssInjected = true;
                 }
             }
         }
 
         if (empty($createdFiles)) {
-            error("❌ Could not generate files for: {$name}");
+            error("Could not generate files for: {$name}");
 
             return Command::FAILURE;
         }
@@ -272,7 +275,7 @@ class AddCommand extends Command
         note("📦 Component: {$name}");
 
         if (! empty($component['description'])) {
-            info('   ' . $component['description']);
+            info('   '.$component['description']);
         }
     }
 
